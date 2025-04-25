@@ -1,0 +1,92 @@
+html {
+    background-color: rgb(32, 32, 32);
+    font-family: 'Lato', sans-serif;
+  }
+  #logo {
+    padding: 10px;
+    width: 50px;
+  }
+
+  #menulogo {
+    width: 120px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .header {
+    padding: 20px;
+    font-size: 32pt;
+    font-family: 'Lato', sans-serif;
+    color: #c8ff00;
+  }
+  .maintxt {
+    padding: 20px;
+    font-size: 12pt;
+    font-family: 'Lato', sans-serif;
+    color: #c8ff00;
+  }
+  
+  body {
+    font-family: 'Lato', sans-serif;
+  }
+  
+  .hamb {
+    float: right;
+    color: #c8ff00;
+    transition: 0.5s;
+    /*Places the hamburger menu to the right of the viewers screen*/
+  }
+  
+  .overlay {
+    height: 100%;
+    width: 0%;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0%;
+    background-color: rgb(0, 0, 0);
+    background-color: rgb(15, 15, 15);
+    overflow-x: hidden;
+    transition: 0.5s;
+  }
+  
+  .overlay-content {
+    position: relative;
+    top: 5%;
+    width: 100%;
+    text-align: center;
+    margin-top: 30px;
+  }
+  
+  .overlay a {
+    padding: 8px;
+    text-decoration: none;
+    font-size: 36px;
+    color: #c8ff00;
+    display: block;
+    transition: 0.3s;
+  }
+  
+  .overlay a:hover, .overlay a:focus {
+    color: #f1f1f1;
+    font-size: 38px;
+  }
+  
+  .overlay .closebtn {
+    position: absolute;
+    top: 20px;
+    right: 45px;
+    font-size: 60px;
+  }
+  
+  @media screen and (max-height: 450px) {
+    .overlay a {font-size: 20px}
+    .overlay .closebtn {
+    font-size: 40px;
+    top: 15px;
+    right: 35px;
+    }
+  }

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/animejs@3.0.1/lib/anime.min.js"></script>
+<style>
+body {
+  font-family: 'Lato', sans-serif;
+}
+
+.hamb {
+  float: right;
+  /*Places the hamburger menu to the right of the viewers screen*/
+}
+
+.overlay {
+  height: 100%;
+  width: 0;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0%;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0, 0.9);
+  overflow-x: hidden;
+  transition: 0.5s;
+}
+
+.overlay-content {
+  position: relative;
+  top: 25%;
+  width: 100%;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.overlay a {
+  padding: 8px;
+  text-decoration: none;
+  font-size: 36px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.overlay a:hover, .overlay a:focus {
+  color: #f1f1f1;
+}
+
+.overlay .closebtn {
+  position: absolute;
+  top: 20px;
+  right: 45px;
+  font-size: 60px;
+}
+
+@media screen and (max-height: 450px) {
+  .overlay a {font-size: 20px}
+  .overlay .closebtn {
+  font-size: 40px;
+  top: 15px;
+  right: 35px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="myNav" class="overlay">
+  <div class="overlay-content">
+    <a href="#">About</a>
+    <a href="#">Services</a>
+    <a href="#">Clients</a>
+    <a href="#">Contact</a>
+  </div>
+</div>
+
+<span class="hamb" style="font-size:30px;cursor:pointer" onclick="openNav();" onclick="closeNav();">&#9776;</span>
+
+<script>
+  let menubool = 0;
+  function openNav() {
+    if (menubool == 0) {
+      document.getElementById("myNav").style.width = "25%";
+      menubool + 1;
+      console.log("boolChange: " + String(menubool));
+    }
+  }
+// these two functions need to be applied to the hamburger menu press, functioning as a toggle
+  function closeNav() {
+    if (menubool == 1) {
+      document.getElementById("myNav").style.width = "0%";
+      menubool - 1;
+      console.log("boolChange: " + String(menubool));
+    }
+  }
+</script>
+     
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.0.1/lib/anime.min.js"></script>
+    <script type="module" src="./JS/index.js"></script>
+    <script async src="https://www.youtube.com/iframe_api"></script>
+  </head>
+  
+  <style media="all">
+  </style>
+  <link rel="stylesheet" href="./CSS/index.css" />
+  <div id="Nav" class="overlay">
+    <background>
+    </background>
+    <a id="sign_in">(not signed in) <b>Log in...</b></a>
+    <img id="header_name" src="../images/logo2.png"></img>
+    <a id="hamb" onclick="toggleHamb()">Ʌ</a>
+    <span id="clock"> </span>
+    <div class="overlay-content" id="menu_content">
+      <a class="menulist" onclick="clickNavMenuButton(this.innerHTML)" id="Welcome" href="#">Home</a>
+      <a class="menulist" onclick="clickNavMenuButton(this.innerHTML)" id="Projects" href="#">Projects</a>
+      <a class="menulist" onclick="clickNavMenuButton(this.innerHTML)" id="About" href="#">About</a>
+      <!--<a class="menulist" onclick="clickNavMenuButton(this.innerHTML)" id="signin" href="#">Sign In</a> -->
+    </div>
+  </div>
+  
+  <div class="navbar">
+    <span id="navbarheader"></span>
+    <a id="Welcome"><img class="logo" src="../images/logo.png" /></a>
+  </div>
+  <div class="content">
+      <iframe scrolling="no" id="mainview" src="Home.html" ></iframe>
+  </div>
+  <body id="youtube">
+
+    <!-- This is where YouTube player will be injected -->
+    <div id="player"></div>
+
+    <!-- Button to change video -->
+    <button id="changeVideo">Change Video</button>
+
+</body>
+</html>
