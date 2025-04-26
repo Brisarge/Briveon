@@ -1,7 +1,8 @@
-import * as THREE from "../node_modules/three/build/three.module.js";
-import { EffectComposer } from "../node_modules/three/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "../node_modules/three/examples/jsm/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "../node_modules/three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import * as THREE from 'https://cdn.skypack.dev/three';
+import { EffectComposer } from 'https://cdn.skypack.dev/three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://cdn.skypack.dev/three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'https://cdn.skypack.dev/three/examples/jsm/postprocessing/UnrealBloomPass.js';
+
 
 // 🔊 Load Audio
 const audio = new Audio("../space_race.mp3");
