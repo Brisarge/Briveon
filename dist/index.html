@@ -1,44 +1,38 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://cdn.jsdelivr.net/npm/animejs@3.0.1/lib/anime.min.js"></script>
-    <script async src="https://www.youtube.com/iframe_api"></script>
-    <script type="module" crossorigin src="/assets/index-CIUhD7oQ.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CLRxoWHY.css">
-  </head>
-  
-  <style media="all">
-  </style>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.0.1/lib/anime.min.js"></script>
+  <script async src="https://www.youtube.com/iframe_api"></script>
+  <script type="module" crossorigin src="/assets/index-D3Ietp_s.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-rNdsqLG3.css">
+</head>
+
+<body>
+
   <div id="Nav" class="overlay">
-    <background>
-    </background>
+    <background></background>
     <a id="sign_in">(not signed in) <b>Log in...</b></a>
-    <img id="header_name" src="../images/logo2.png"></img>
-    <a id="hamb" onclick="toggleHamb()">Ʌ</a>
-    <span id="clock"> </span>
+    <img id="header_name" src="assets/images/logo2.png" />
+    <a id="hamb">Ʌ</a> <!-- remove onclick, let JS handle it -->
+    <span id="clock"></span>
     <div class="overlay-content" id="menu_content">
-      <a class="menulist" onclick="clickNavMenuButton(this.innerHTML)" id="Welcome" href="#">Home</a>
-      <a class="menulist" onclick="clickNavMenuButton(this.innerHTML)" id="Projects" href="#">Projects</a>
-      <a class="menulist" onclick="clickNavMenuButton(this.innerHTML)" id="About" href="#">About</a>
-      <!--<a class="menulist" onclick="clickNavMenuButton(this.innerHTML)" id="signin" href="#">Sign In</a> -->
+      <a class="menulist" id="Welcome" href="#">Home</a>
+      <a class="menulist" id="Projects" href="#">Projects</a>
+      <a class="menulist" id="About" href="#">About</a>
     </div>
   </div>
-  
+
   <div class="navbar">
     <span id="navbarheader"></span>
-    <a id="Welcome"><img class="logo" src="../images/logo.png" /></a>
+    <a id="WelcomeLink"><img class="logo" src="assets/images/logo.png" /></a>
   </div>
+
   <div class="content">
-      <div id="mainview"></div>
+    <button id="start">Start</button>
+    <div id="mainview"></div> <!-- This is where Home.html content goes -->
   </div>
-  <body id="youtube">
-
-    <!-- This is where YouTube player will be injected -->
-    <div id="player"></div>
-
-    <!-- Button to change video -->
-    <button id="changeVideo">Change Video</button>
 
 </body>
 </html>

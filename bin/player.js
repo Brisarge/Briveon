@@ -1,5 +1,5 @@
 // player.js
-import { getVideoInfo } from "./youtubeAPI.js";
+import { getVideoInfo } from "../src/js/youtubeAPI.js";
 
 let player;
 

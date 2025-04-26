@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'; 
 
 // 🔊 Load Audio
-const audio = new Audio("../music/space_race.mp3");
+const audio = new Audio("assets/music/space_race.mp3");
 audio.loop = true;
 audio.crossOrigin = "anonymous";
 
@@ -241,24 +241,21 @@ function animate() {
 // 🟢 Start Animation
 animate();
 
-
-// 🎵 Start Audio on User Interaction
-window.addEventListener("click", () => {
-  if (audioContext.state === "suspended") {
-    audioContext.resume();
-  }
-  audio.play().catch(err => console.error("Audio play error:", err));
-});
-
-// 🎵 Message Event to Start Audio if in an iFrame
-window.addEventListener("message", (event) => {
-  if (event.data === "startAudio") {
+const startButton = document.getElementById("start");
+if (startButton) {
+  startButton.addEventListener("click", () => {
     if (audioContext.state === "suspended") {
       audioContext.resume();
     }
-    audio.play().catch(err => console.error("Audio play error:", err));
-  }
-});
+
+    audio.play().then(() => {
+      console.log("Audio started playing.");
+    }).catch(err => {
+      console.error("Audio play error:", err);
+    });
+  });
+}
+
 
 // 📏 Handle Window Resize
 window.addEventListener("resize", () => {
@@ -268,3 +265,4 @@ window.addEventListener("resize", () => {
   composer.setSize(window.innerWidth, window.innerHeight);
 });
 
+export { audio, audioContext };

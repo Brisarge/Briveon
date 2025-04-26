@@ -1,3 +1,6 @@
+import './cubeneon.js';
+
+
 let menubool = 0;
 let loginbool = 0;
 let logobool = 0;
@@ -17,15 +20,17 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-function clickNavMenuButton(btn) {
-  fetch(`${btn}.html`)
-    .then(res => res.text())
+function loadPage(page) {
+  fetch(`/${page}.html`)
+    .then(response => response.text())
     .then(html => {
       document.getElementById("mainview").innerHTML = html;
     })
-    .catch(err => console.error("Error loading page:", err));
+    .catch(error => {
+      console.error(`Failed to load ${page}:`, error);
+      document.getElementById("mainview").innerHTML = "<p>Error loading page.</p>";
+    });
 }
-
 
 function toggleNav() {
   if (menubool == 0) {
@@ -121,10 +126,7 @@ function adjustDisplay() {
     }
 }
 
-document.addEventListener("click", () => {
-    const iframe = document.getElementById("mainview"); // Ensure this matches your iframe ID
-    iframe.contentWindow.postMessage("startAudio", "*"); // Send message to iframe
-});
+
 
 
 // Call the function on window resize
@@ -132,3 +134,7 @@ window.addEventListener('resize', adjustDisplay);
 
 // Call the function on page load to set the initial display
 window.addEventListener('load', adjustDisplay);
+
+document.getElementById("Welcome").addEventListener("click", () => loadPage("Home"));
+document.getElementById("Projects").addEventListener("click", () => loadPage("Projects"));
+document.getElementById("About").addEventListener("click", () => loadPage("About"));
