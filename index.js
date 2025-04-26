@@ -1,4 +1,6 @@
-import './cubeneon.js';
+import './src/js/cubeneon.js';
+import { stopVisualizer } from './src/js/cubeneon.js';
+
 
 
 let menubool = 0;
@@ -25,6 +27,9 @@ function loadPage(page) {
     .then(response => response.text())
     .then(html => {
       document.getElementById("mainview").innerHTML = html;
+      if (page !== 'Home') {
+        stopVisualizer();
+      }
     })
     .catch(error => {
       console.error(`Failed to load ${page}:`, error);
@@ -135,6 +140,11 @@ window.addEventListener('resize', adjustDisplay);
 // Call the function on page load to set the initial display
 window.addEventListener('load', adjustDisplay);
 
-document.getElementById("Welcome").addEventListener("click", () => loadPage("Home"));
-document.getElementById("Projects").addEventListener("click", () => loadPage("Projects"));
-document.getElementById("About").addEventListener("click", () => loadPage("About"));
+document.addEventListener("DOMContentLoaded", () => {
+  myClock();
+
+  document.getElementById("Welcome").addEventListener("click", () => loadPage("Home"));
+  document.getElementById("Projects").addEventListener("click", () => loadPage("Projects"));
+  document.getElementById("About").addEventListener("click", () => loadPage("About"));
+});
+

@@ -3,6 +3,11 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'; 
 
+
+// Flags
+
+let isAnimating = true;
+
 // 🔊 Load Audio
 const audio = new Audio("assets/music/space_race.mp3");
 audio.loop = true;
@@ -206,6 +211,7 @@ const orbitSpeed = 0.001; // Speed of orbiting
 
 // 🎥 Animation Loop
 function animate() {
+  if (!isAnimating) return;
   requestAnimationFrame(animate);
   analyser.getByteFrequencyData(dataArray);
 
@@ -257,6 +263,7 @@ if (startButton) {
 }
 
 
+
 // 📏 Handle Window Resize
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -265,4 +272,14 @@ window.addEventListener("resize", () => {
   composer.setSize(window.innerWidth, window.innerHeight);
 });
 
-export { audio, audioContext };
+function stopVisualizer() {
+  isAnimating = false;
+
+  // Optional: fully clear scene if you want
+  scene.clear();
+  
+  // Optional: remove canvas if you want
+  renderer.domElement.remove();
+}
+
+export { audio, audioContext, stopVisualizer };
