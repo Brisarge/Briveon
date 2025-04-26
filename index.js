@@ -18,13 +18,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function clickNavMenuButton(btn) {
-  if (btn == "Home") {
-    document.getElementById("mainview").src = btn + ".html"
-  }
-  else {
-  document.getElementById("mainview").src = btn + ".html";
-  }
+  fetch(`${btn}.html`)
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("mainview").innerHTML = html;
+    })
+    .catch(err => console.error("Error loading page:", err));
 }
+
 
 function toggleNav() {
   if (menubool == 0) {
