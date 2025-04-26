@@ -67,10 +67,10 @@ const colorPalette = [
 ];
 
 const loudnessHistory = [];
-const maxHistorySize = 50;
+const maxHistorySize = 20;
 
 let lastColorCheck = 0;
-const colorUpdateInterval = 50; // ms
+const colorUpdateInterval = 16.67; // ms
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -92,7 +92,7 @@ function updateColorsBPM(currentTime) {
   }
 
   const avgHistory = loudnessHistory.reduce((a, b) => a + b, 0) / loudnessHistory.length;
-  const threshold = avgHistory * 1.2;
+  const threshold = avgHistory * 1.05;
   
   
 
