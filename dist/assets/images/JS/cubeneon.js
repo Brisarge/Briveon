@@ -4,7 +4,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 // 🔊 Load Audio
-const audio = new Audio("../space_race.mp3");
+const audio = new Audio("../music/space_race.mp3");
 audio.loop = true;
 audio.crossOrigin = "anonymous";
 
