@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function loadPage(page) {
-  fetch(`/src/${page}.html`)
+  fetch(`/assets/html/${page}.html`)
     .then(response => response.text())
     .then(html => {
       document.getElementById("mainview").innerHTML = html;
@@ -133,6 +133,11 @@ function adjustDisplay() {
     }
 }
 
+function disableTip() {
+  var tip = document.getElementById("tip");
+  tip.style.display = "none";
+}
+
 
 
 
@@ -144,8 +149,9 @@ window.addEventListener('load', adjustDisplay);
 
 document.addEventListener("DOMContentLoaded", () => {
   myClock();
-
+  
   document.getElementById("hamb").addEventListener("click", toggleHamb);
+  document.getElementById("Welcome").addEventListener("click", disableTip);
   document.getElementById("Welcome").addEventListener("click", () => loadPage("Home"));
   document.getElementById("Projects").addEventListener("click", () => loadPage("Projects"));
   document.getElementById("About").addEventListener("click", () => loadPage("About"));
