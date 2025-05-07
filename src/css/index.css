@@ -73,19 +73,24 @@ html {
 
   p {
     color: rgb(224, 255, 206);
-    position: static;
-    margin: 20px;
+    max-width: 800px;
+    margin: 50px auto; /* Centers horizontally */
     font-size: 25px;
-    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    line-height: 1.6;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     text-indent: 1.5em;
+    text-align: justify; /* Optional: for even edges */
   }
-
+  
   #me_img {
-    position: relative;
-    left: 90px;
-    border-radius: 20px;
-    width: 20%;
+    display: block;
+    margin: 40px auto 20px auto; /* Top/Bottom/Horizontal center */
+    border-radius: 50%; /* Perfect circle */
+    object-fit: cover; /* Clean crop */
+    width: 400px;
+    height: 400px;
   }
+  
 
   #start {
     z-index: 4;
@@ -289,6 +294,7 @@ html {
 
   p {
     font-size: 15px;
+    padding: 50px;
   }
 
   h1 {

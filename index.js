@@ -1,5 +1,5 @@
-import './src/js/cubeneon.js';
-import { stopVisualizer } from './src/js/cubeneon.js';
+import '/src/js/cubeneon.js';
+import { startVisualizer, stopVisualizer } from '/src/js/cubeneon.js';
 
 
 
@@ -23,11 +23,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function loadPage(page) {
-  fetch(`/${page}.html`)
+  fetch(`/src/${page}.html`)
     .then(response => response.text())
     .then(html => {
       document.getElementById("mainview").innerHTML = html;
-      if (page !== 'Home') {
+      if (page === 'Home') {
+        startVisualizer();
+      } else {
         stopVisualizer();
       }
     })
@@ -143,8 +145,10 @@ window.addEventListener('load', adjustDisplay);
 document.addEventListener("DOMContentLoaded", () => {
   myClock();
 
+  document.getElementById("hamb").addEventListener("click", toggleHamb);
   document.getElementById("Welcome").addEventListener("click", () => loadPage("Home"));
   document.getElementById("Projects").addEventListener("click", () => loadPage("Projects"));
   document.getElementById("About").addEventListener("click", () => loadPage("About"));
 });
 
+startVisualizer();
