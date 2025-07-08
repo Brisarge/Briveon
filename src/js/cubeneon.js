@@ -111,9 +111,20 @@ function animate() {
   camera.position.z = Math.sin(angle) * orbitRadius;
   camera.lookAt(focusPoint);
 
+  const gridSize = Math.sqrt(cubes.length);
+  const bandWidth = Math.floor(bufferLength / gridSize);
+
   cubes.forEach((cube, index) => {
-    const fftIndex = Math.floor(index / cubes.length * bufferLength);
-    const intensity = dataArray[fftIndex] / 255;
+    const row = Math.floor(index / gridSize);
+    const bandStart = row * bandWidth;
+    let bandValue = 0;
+
+    for (let i = 0; i < bandWidth; i++) {
+      bandValue += dataArray[bandStart + i] || 0;
+    }
+    const avgBandValue = bandValue / bandWidth;
+
+    const intensity = avgBandValue / 255;
     const rawY = intensity * intensity * 20;
     const clampedY = clamp(rawY, 0.1, 50);
     cube.scale.set(1.5, clampedY, 1.5);
@@ -122,6 +133,13 @@ function animate() {
 
   updatePolyrhythmCubes(now);
   composer.render();
+}
+// 🎥 Start the visualizer
+
+function startMusic() {
+  audioContext.resume().then(() => {
+    audio.play().catch(console.error);
+  });
 }
 
 function startVisualizer() {
@@ -150,8 +168,8 @@ function startVisualizer() {
 
   renderer = new THREE.WebGLRenderer({ alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x000000, 0);
-  document.body.appendChild(renderer.domElement);
+  renderer.setClearColor(0x202020, 0);  // Your page's dark gray
+  document.getElementById("background-layer").appendChild(renderer.domElement);
 
   composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
@@ -169,10 +187,10 @@ function startVisualizer() {
 
   // 🎲 Generate cubes
   cubes = [];
-  const gridSize = 12;
-  const spacing = 2;
+  const gridSize = 12; // Number of cubes in each row/column
+  const spacing = 2; // Space between cubes
   for (let x = 0; x < gridSize; x++) {
-    for (let z = 0; z < gridSize; z++) {
+    for (let z = 0; z < gridSize; z++) { 
       const posX = (x - gridSize / 2) * spacing;
       const posZ = (z - gridSize / 2) * spacing;
       cubes.push(createCube(new THREE.Vector3(posX, 0, posZ), scene));
@@ -182,20 +200,25 @@ function startVisualizer() {
 
   animate();
 
-  audioContext.resume().then(() => {
-    audio.play().catch(console.error);
-  });
-
   window.addEventListener("resize", handleResize);
 }
 
 function handleResize() {
   if (!camera || !renderer || !composer) return;
-  camera.aspect = window.innerWidth / window.innerHeight;
+
+  camera.aspect = (window.innerWidth / window.innerHeight);
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   composer.setSize(window.innerWidth, window.innerHeight);
+
+  // Dynamically adjust orbit radius based on screen width
+  const baseOrbit = 20; // default for 1920 width
+  const minOrbit = 16;
+  const maxOrbit = 40;
+  const normalized = clamp(window.innerWidth / 1920, 0.5, 1.5);
+  orbitRadius = clamp(baseOrbit * normalized, minOrbit, maxOrbit);
 }
+
 
 function stopVisualizer() {
   isAnimating = false;
@@ -214,4 +237,4 @@ function stopVisualizer() {
   window.removeEventListener("resize", handleResize);
 }
 
-export { startVisualizer, stopVisualizer };
+export { startVisualizer, stopVisualizer, startMusic };

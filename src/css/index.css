@@ -1,25 +1,61 @@
 html {
     font-family: 'Lato', sans-serif;
   }
+
   
-  background {
-    z-index: 4;
+    /* Container for dropdown */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  /* Hidden by default */
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #111;
+    min-width: 220px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    z-index: 20;
+  }
+
+  .dropdown-content a {
+    color: #ccc;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background 0.2s;
+    z-index: 12;
+  }
+
+  .dropdown-content a:hover {
+    background-color: #333;
+    color: #fff;
+  }
+
+  /* Show dropdown on hover */
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+
+  .background {
+    z-index: 0;
     background-color: rgba(15, 15, 15, 1);
     position: fixed;
-    top:0px;
-    left:0px;
-    padding-right: 100%;
-    padding-left: 100%;
-    padding-top: 90px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 90px; /* Exact navbar height */
   }
 
   #header_name {
-    z-index: 4;
+    z-index: 5;
     color: #c5e418;
     width: 120px;
     text-align: center;
     top: 5px;
-    left: 46.2%;
+    left: 50%;
+    transform: translateX(-50%);
     position: fixed;
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
   }
@@ -35,7 +71,6 @@ html {
     right: 50px;
     top: 20px;
     padding:0%;
-
   }
 
   #sign_in:hover {
@@ -43,7 +78,7 @@ html {
   }
 
   body {
-    background-color: rgb(32, 32, 32);
+    background-color: rgb(0, 0, 0);
   }
 
   #steam_frame {
@@ -59,6 +94,8 @@ html {
     border-radius: 10px;
     margin: 10px;
     padding-bottom: 20px;
+    max-width: 50%;
+    transform: translateX(50%);
   }
 
 
@@ -68,7 +105,8 @@ html {
     color: rgb(124, 201, 0);
     padding: 15px;
     font-size: 40px;
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
+    border-radius: 5px;
   }
 
   p {
@@ -92,14 +130,32 @@ html {
   }
   
 
-  #start {
-    z-index: 4;
-    position: fixed;
+  #startVis {
+    z-index: 10;
+    padding: 30px;
+    position: absolute;
+    display: block;
     color: #8BC641;
     background-color: rgb(38, 38, 33);
-    font-size: 15px;
+    font-size: 20px;
     left: 50%;
-    top: 100px;
+    top: 120px; /* Adjust this as needed */
+    border: 2px solid #8BC641;
+    border-radius: 20px;
+    transform: translateX(-50%);
+  }
+  
+
+  #startVis:hover {
+    background-color: rgb(10, 15, 0);
+    cursor: pointer;
+    color: #c5e418;
+    border: 3px solid #c5e418;
+  }
+
+  #startVis:active {
+    background-color: rgb(136, 255, 0);
+    color: #000000;
   }
 
   #clock {
@@ -149,7 +205,7 @@ html {
   }
 
   #header {
-    z-index: 4;
+    z-index: 5;
     background-color: rgb(15, 15, 15) ;
     padding: 10px;
     padding-right: 25px;
@@ -172,16 +228,20 @@ html {
     background-color: #8BC641;
   }
 
-  canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    mix-blend-mode: lighten; /* Try lighten, screen, or overlay */
+#background-layer {
+  background-color: transparent
 }
 
+#background-layer canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-color: transparent
+}
 
 #mainview {
   border: none;
@@ -189,9 +249,8 @@ html {
   width: 100%;
   height: 90vh;
   overflow: visible;
+  z-index: 10;
 }
-
-  
   
  #hamb {
     width: 20px;
@@ -221,12 +280,31 @@ html {
   #hamb:active {
     background-color: rgb(0, 0, 0);
   }
-  
+
+  .project-link {
+    color: #8BC641;
+    font-size: 20px;
+    text-decoration: none;
+    display: block;
+    padding: 20px;
+    max-width: 70%;
+    text-align: center;
+    background-color: #080808;
+    margin: 0 auto; /* THIS is the magic line */
+    border-radius: 5px;
+    transition: all 0.2s ease;
+  }
+
+  .project-link:hover {
+    color: #8cff00;
+    font-size: 30px;
+    background-color: #000000;
+  }
   .overlay {
-    height: 100%;
+    height: 90px;
     width: 100%;
     position: fixed;
-    z-index: 0;
+    z-index: 1;
     top: 0;
     text-align: center;
     right: 15px;
@@ -323,6 +401,7 @@ html {
     border-bottom-right-radius: 10px;
     border-bottom: 5px solid #8BC641;
   }
+
   .menulist {
     background-color: rgb(38, 38, 33);
     position: relative;
@@ -338,8 +417,13 @@ html {
     height: 40px;
     text-align: center;
   }
+
   body {
     margin-top: 50px;
+  }
+
+  #startVis {
+    top: 80%;
   }
 
   #hamb {
@@ -354,8 +438,20 @@ html {
 
   #header_name {
     width: 180px;
-    top: 45px;
-    left: 80px
+    top: 50px;
+  }
+
+  #content_frame {
+    background-color: rgb(20, 20, 20);
+    border-radius: 10px;
+    margin: 10px;
+    padding-bottom: 20px;
+    max-width: 80%;
+    transform: translateX(10%);
+  }
+
+  .project-link {
+    max-width: 80%;
   }
 }
   

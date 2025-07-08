@@ -12,8 +12,8 @@
 <body>
 
   <div id="Nav" class="overlay">
-    <background></background>
-    <a id="sign_in">(not signed in) <b>Log in...</b></a>
+    <div class="background"></div>
+    <a id="sign_in"><!--(not signed in) <b>Log in...</b>--></a>
     <img id="header_name" src="assets/images/logo2.png" />
     <a id="hamb">Ʌ</a> <!-- remove onclick, let JS handle it -->
     <span id="clock"></span>
@@ -28,11 +28,10 @@
     <span id="navbarheader"></span>
     <a id="WelcomeLink"><img class="logo" src="assets/images/logo.png" /></a>
   </div>
-
+  <button id="startVis">▶</button>
+  <div id="background-layer"></div>
   <div class="content">
-    <div id="tip" style="right: 50%;">Click Home!</div>
-    <div id="mainview"></div> <!-- This is where Home.html content goes -->
+    <div id="mainview"></div> <!-- This is where Home.html content goes initially -->
   </div>
-
 </body>
 </html>

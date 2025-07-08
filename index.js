@@ -1,5 +1,5 @@
 import '/src/js/cubeneon.js';
-import { startVisualizer, stopVisualizer } from '/src/js/cubeneon.js';
+import { startVisualizer, stopVisualizer, startMusic } from '/src/js/cubeneon.js';
 
 
 
@@ -16,7 +16,6 @@ function myClock() {
   }, 1000);
 }
 
-
 document.addEventListener("DOMContentLoaded", () => {
   myClock();
 });
@@ -28,8 +27,10 @@ function loadPage(page) {
     .then(html => {
       document.getElementById("mainview").innerHTML = html;
       if (page === 'Home') {
+        document.getElementById("startVis").style.display = "block";
         startVisualizer();
       } else {
+        document.getElementById("startVis").style.display = "none";
         stopVisualizer();
       }
     })
@@ -133,12 +134,14 @@ function adjustDisplay() {
     }
 }
 
-function disableTip() {
-  var tip = document.getElementById("tip");
-  tip.style.display = "none";
+function startVisButton() {
+  const button = document.getElementById("startVis");
+  console.log("Button clicked ✅");
+
+  startVisualizer();
+  if (typeof startMusic === 'function') startMusic();
+  button.style.display = "none";
 }
-
-
 
 
 // Call the function on window resize
@@ -149,12 +152,12 @@ window.addEventListener('load', adjustDisplay);
 
 document.addEventListener("DOMContentLoaded", () => {
   myClock();
-  
+  adjustDisplay();
+  loadPage("Home")
+
+  document.getElementById("startVis").addEventListener("click", startVisButton);
   document.getElementById("hamb").addEventListener("click", toggleHamb);
-  document.getElementById("Welcome").addEventListener("click", disableTip);
   document.getElementById("Welcome").addEventListener("click", () => loadPage("Home"));
   document.getElementById("Projects").addEventListener("click", () => loadPage("Projects"));
   document.getElementById("About").addEventListener("click", () => loadPage("About"));
 });
-
-startVisualizer();
