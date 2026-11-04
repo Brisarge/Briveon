@@ -6,11 +6,11 @@
 // (only emails listed in the `admins` table can read or change anything).
 
 // Supabase > Project Settings > Data API > Project URL, e.g. 'https://abcdefghijkl.supabase.co'
-export const SUPABASE_URL = '';
+export const SUPABASE_URL = 'https://ezgnevjnmgddbfvfinku.supabase.co';
 
 // Supabase > Project Settings > API Keys > the "publishable" key (or the legacy "anon public" key).
 // Never put the "secret" / "service_role" key here.
-export const SUPABASE_KEY = '';
+export const SUPABASE_KEY = 'sb_publishable_gB3ym11EjP0PrsC5_yPXbQ_VHPz31s1';
 
 // Names shown in the assignee picker and filters.
 export const TEAM = ['Bris', 'Rog'];
