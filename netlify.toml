@@ -1,0 +1,12 @@
+# Netlify settings for briveon.net. These override the build settings in the
+# Netlify dashboard. The site has no build step: Netlify serves the repo
+# files as they are.
+[build]
+  publish = "."
+  command = "echo 'No build step: plain static site'"
+
+# Keep the admin area out of search results.
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

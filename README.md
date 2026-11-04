@@ -2,7 +2,7 @@
 
 Brighton's portfolio site plus **Briveon HQ**, a private admin area (login + shared task board) for Bris and Rog.
 
-Plain HTML/CSS/JS with no build step: GitHub Pages serves the files exactly as they are in the repo.
+Live at **https://briveon.net** (hosted on Netlify). Plain HTML/CSS/JS with no build step: Netlify serves the files exactly as they are in the repo.
 
 | Path | What it is |
 |---|---|
@@ -14,6 +14,7 @@ Plain HTML/CSS/JS with no build step: GitHub Pages serves the files exactly as t
 | `admin/config.js` | Supabase connection + team names |
 | `supabase/schema.sql` | Database setup for HQ (run once) |
 | `tools/serve.ps1` | Local preview server (no Node/Python needed) |
+| `netlify.toml` | Netlify deploy settings (no build, serve the repo root) |
 | `old/` | Old landing page experiments, not linked from the site |
 
 ## Preview locally
@@ -24,13 +25,11 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 
 Then open http://localhost:5173. To try HQ without Supabase, open http://localhost:5173/admin/?demo (localhost only, nothing is saved).
 
-## Publish with GitHub Pages
+## Publish
 
-1. Merge the `revamp` branch into `main` and push.
-2. On GitHub: repo **Settings → Pages → Build and deployment → Source: Deploy from a branch**, branch `main`, folder `/ (root)`, Save.
-3. A minute later the site is live at https://brisarge.github.io/Briveon/. Every push to `main` updates it.
+Push to `main`. Netlify picks up the push and redeploys briveon.net within a minute or so.
 
-A custom domain can be added later under Settings → Pages → Custom domain.
+`netlify.toml` tells Netlify there's no build step and to serve the repo root. It overrides the build settings in the Netlify dashboard. If a deploy doesn't show up, check the Netlify dashboard under **Deploys** for a failed build and its log.
 
 ## Admin setup (Supabase, free)
 
@@ -43,7 +42,7 @@ A custom domain can be added later under Settings → Pages → Custom domain.
    insert into public.admins (email) values ('you@example.com'), ('rog@example.com');
    ```
 6. Copy the **Project URL** (Project Settings → Data API) and the **publishable key** (Project Settings → API Keys; older projects call it the "anon public" key) into `admin/config.js`. Never use the secret / `service_role` key.
-7. Push, open `/admin/` on the site, sign in.
+7. Push, open https://briveon.net/admin/, sign in.
 
 How the data stays private: the publishable key is designed to be public, but the database rules in `schema.sql` only let signed-in users whose email is in `admins` read or change tasks. Changes show up live for both of you.
 
