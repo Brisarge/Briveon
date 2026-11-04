@@ -1,37 +1,174 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="src/css/index.css" />
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.0.1/lib/anime.min.js"></script>
-  <script async src="https://www.youtube.com/iframe_api"></script>
-  <script type="module" src="index.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Briveon Multimedia · Brighton, game developer</title>
+  <meta name="description" content="Brighton (Briveon Multimedia), a systems-driven game developer building in Roblox Luau, Unity and JavaScript.">
+  <meta name="theme-color" content="#060705">
+  <meta property="og:title" content="Briveon Multimedia">
+  <meta property="og:description" content="Systems-driven games in Roblox Luau, Unity and JavaScript.">
+  <meta property="og:image" content="assets/images/flag.png">
+  <link rel="icon" href="assets/images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/site.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script>document.documentElement.classList.add('js');</script>
+  <script type="module" src="js/main.js"></script>
 </head>
-
 <body>
+  <a class="skip" href="#main">Skip to content</a>
 
-  <div id="Nav" class="overlay">
-    <div class="background"></div>
-    <a id="sign_in"><!--(not signed in) <b>Log in...</b>--></a>
-    <img id="header_name" src="assets/images/logo2.png" />
-    <a id="hamb">Ʌ</a> <!-- remove onclick, let JS handle it -->
-    <span id="clock"></span>
-    <div class="overlay-content" id="menu_content">
-      <a class="menulist" id="Welcome" href="#">Home</a>
-      <a class="menulist" id="Projects" href="#">Projects</a>
-      <a class="menulist" id="About" href="#">About</a>
+  <header class="nav" id="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="Briveon Multimedia, back to top">
+        <img class="brand-mark" src="assets/images/logo.png" alt="" width="34" height="34">
+        <img class="brand-word" src="assets/images/logo2.png" alt="" height="13">
+      </a>
+      <nav aria-label="Main">
+        <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-links">Menu</button>
+        <ul class="nav-links" id="nav-links">
+          <li><a href="#work">Work</a></li>
+          <li><a href="#lab">Lab</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li>
+            <a class="nav-admin" href="admin/">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>
+              Admin
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
-  </div>
+  </header>
 
-  <div class="navbar">
-    <span id="navbarheader"></span>
-    <a id="WelcomeLink"><img class="logo" src="assets/images/logo.png" /></a>
-  </div>
-  <button id="startVis">▶</button>
-  <div id="background-layer"></div>
-  <div class="content">
-    <div id="mainview"></div> <!-- This is where Home.html content goes initially -->
-  </div>
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="wrap hero-grid">
+        <div>
+          <p class="eyebrow">Brighton · Briveon Multimedia</p>
+          <h1>Games built<br>on <em>systems</em>.</h1>
+          <p class="lede">I design <strong>procedural worlds</strong>, <strong>card economies</strong> and <strong>audio-reactive visuals</strong>, and ship them in Roblox, Unity and the browser.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#work">See my games</a>
+            <a class="btn" href="#lab">Try the visualizer</a>
+          </div>
+          <ul class="toolbelt" aria-label="Tools">
+            <li>Roblox Luau</li>
+            <li>Unity</li>
+            <li>JavaScript</li>
+            <li>three.js</li>
+          </ul>
+        </div>
+        <div class="hero-emblem" aria-hidden="true">
+          <img src="assets/images/logo.png" alt="" width="300" height="300">
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="work" aria-labelledby="work-title">
+      <div class="wrap">
+        <header class="section-head" data-reveal>
+          <p class="eyebrow">01 / Work</p>
+          <h2 id="work-title">Games &amp; projects</h2>
+        </header>
+        <div id="featured"></div>
+        <div class="grid" id="project-grid"></div>
+      </div>
+    </section>
+
+    <section class="section" id="lab" aria-labelledby="lab-title">
+      <div class="wrap">
+        <header class="section-head" data-reveal>
+          <p class="eyebrow">02 / Lab</p>
+          <h2 id="lab-title">Neon cube visualizer</h2>
+          <p>144 cubes listening to the music in real time. Each row reacts to its own slice of the frequency spectrum while the whole grid waves in a polyrhythm locked to the tempo.</p>
+        </header>
+        <div class="lab" data-reveal>
+          <div class="lab-stage" id="lab-stage">
+            <div class="lab-poster" id="lab-poster" aria-hidden="true"></div>
+            <button class="btn btn-primary lab-play" id="lab-play" type="button">▶ Play with music</button>
+            <p class="lab-status" id="lab-status" aria-live="polite"></p>
+          </div>
+          <div class="lab-panel">
+            <div>
+              <h3>Track</h3>
+              <div class="segmented" id="lab-tracks"></div>
+            </div>
+            <div>
+              <h3>Playback</h3>
+              <div class="segmented">
+                <button class="btn" id="lab-toggle" type="button" disabled>Pause</button>
+                <button class="btn" id="lab-stop" type="button" disabled>Stop</button>
+              </div>
+            </div>
+            <dl class="specs">
+              <dt>Cubes</dt><dd>12 × 12</dd>
+              <dt>Analysis</dt><dd>128-bin FFT</dd>
+              <dt>Motion</dt><dd>130 BPM polyrhythm</dd>
+              <dt>Post FX</dt><dd>Unreal bloom</dd>
+            </dl>
+            <p class="lab-note">Plays audio. Best on desktop with headphones.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="wrap about-grid">
+        <div class="portrait" data-reveal>
+          <img src="assets/images/me.jpg" alt="Brighton" width="400" height="400" loading="lazy">
+        </div>
+        <div class="about-text" data-reveal>
+          <header class="section-head">
+            <p class="eyebrow">03 / About</p>
+            <h2 id="about-title">Hey, I'm Brighton</h2>
+          </header>
+          <p>A systems-driven creator with a love for game development, simulation, and crafting immersive digital experiences.</p>
+          <p>I've been building things since I was a kid, from wiring contraptions in GMod's Wiremod and scripting E2 chips to building AI-controlled war machines in From the Depths with modular weapon systems and drag-optimized hulls.</p>
+          <p>I thrive in games that reward problem-solving and leadership. Whether commanding squads in Hell Let Loose, running platoons in Planetside 2, or mentoring new bounty hunters in Elite: Dangerous, I naturally step into roles that require clarity, quick decision-making, and systems thinking under pressure.</p>
+          <p>That same mindset carries into my work: designing procedural systems, translating rhythm patterns into visual experiences, and shipping polished, technically ambitious games. Whether it's gameplay mechanics, real-time audio-reactive visuals, or modular tween architectures, I take pride in building things that are both engineered and expressive.</p>
+          <ul class="skills" aria-label="Skills">
+            <li>Roblox Luau</li>
+            <li>Unity</li>
+            <li>JavaScript &amp; three.js</li>
+            <li>Procedural generation</li>
+            <li>Game economy &amp; balance</li>
+            <li>Audio-reactive visuals</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section contact" id="contact" aria-labelledby="contact-title">
+      <div class="wrap" data-reveal>
+        <p class="eyebrow">04 / Contact</p>
+        <h2 id="contact-title">Let's build something</h2>
+        <p>Questions about a game, a collab, or how something works? Reach out.</p>
+        <ul class="contact-links" id="contact-links"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <span>© <span id="year">2026</span> Briveon Multimedia</span>
+      <span><a href="#top">Back to top</a><a href="admin/">Admin</a></span>
+    </div>
+  </footer>
 </body>
 </html>

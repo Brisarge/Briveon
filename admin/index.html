@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Briveon HQ</title>
+  <meta name="theme-color" content="#060705">
+  <link rel="icon" href="../assets/images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="admin.css">
+  <script type="module" src="admin.js"></script>
+</head>
+<body>
+
+  <!-- Shown while checking the session -->
+  <section class="center-view" id="view-loading">
+    <p class="eyebrow">Loading…</p>
+  </section>
+
+  <!-- Shown until admin/config.js has the Supabase values -->
+  <section class="center-view" id="view-setup" hidden>
+    <div class="auth-card">
+      <img class="auth-logo" src="../assets/images/logo.png" alt="" width="56" height="56">
+      <p class="eyebrow">Briveon HQ</p>
+      <h1>Not connected yet</h1>
+      <p class="muted">The admin area needs a free Supabase project for logins and the shared board.</p>
+      <ol class="setup-steps">
+        <li>Create a project at supabase.com.</li>
+        <li>Run <code>supabase/schema.sql</code> in its SQL Editor.</li>
+        <li>Add your and Rog's logins, then put both emails in the <code>admins</code> table.</li>
+        <li>Paste the Project URL and publishable key into <code>admin/config.js</code>.</li>
+      </ol>
+      <p class="muted small">Full steps are in README.md.</p>
+      <a class="btn" href="../">Back to site</a>
+    </div>
+  </section>
+
+  <!-- Sign in -->
+  <section class="center-view" id="view-login" hidden>
+    <form class="auth-card" id="login-form" novalidate>
+      <img class="auth-logo" src="../assets/images/logo.png" alt="" width="56" height="56">
+      <p class="eyebrow">Briveon HQ</p>
+      <h1>Admin sign-in</h1>
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" autocomplete="username" required>
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <p class="form-error" id="login-error" role="alert"></p>
+      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+      <a class="back-link" href="../">← Back to site</a>
+    </form>
+  </section>
+
+  <!-- The app -->
+  <div id="view-app" hidden>
+    <header class="hq-top">
+      <a class="hq-brand" href="./">
+        <img src="../assets/images/logo.png" alt="" width="30" height="30">
+        <span>Briveon <b>HQ</b></span>
+      </a>
+      <nav class="hq-tabs" aria-label="Tools">
+        <a class="hq-tab" aria-current="page" href="#board">Task board</a>
+      </nav>
+      <div class="hq-user">
+        <span class="sync" id="sync" title="Live updates"><i></i><span id="sync-label">Connecting</span></span>
+        <span class="hq-email" id="hq-email"></span>
+        <button class="btn btn-small" id="sign-out" type="button">Sign out</button>
+        <a class="btn btn-small" href="../">Site</a>
+      </div>
+    </header>
+
+    <main class="hq-main" id="board">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <h1>Task board</h1>
+          <button class="btn btn-primary" id="new-task" type="button">+ New task</button>
+        </div>
+        <div class="toolbar-right">
+          <div class="chips" id="filter-people" role="group" aria-label="Filter by person"></div>
+          <label class="select-wrap">
+            <span class="sr-only">Filter by project</span>
+            <select id="filter-project"></select>
+          </label>
+        </div>
+      </div>
+
+      <div class="board" id="board-columns"></div>
+    </main>
+  </div>
+
+  <dialog class="task-dialog" id="task-dialog" aria-labelledby="task-dialog-title">
+    <form method="dialog" id="task-form">
+      <header>
+        <h2 id="task-dialog-title">New task</h2>
+        <button class="icon-btn" type="button" value="cancel" id="task-close" aria-label="Close">✕</button>
+      </header>
+      <label class="field">
+        <span>Title</span>
+        <input name="title" maxlength="200" required autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Notes</span>
+        <textarea name="notes" rows="5" maxlength="5000"></textarea>
+      </label>
+      <div class="field-row">
+        <label class="field">
+          <span>Status</span>
+          <select name="status">
+            <option value="todo">To do</option>
+            <option value="doing">Doing</option>
+            <option value="done">Done</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Who</span>
+          <select name="assignee" id="assignee-select"></select>
+        </label>
+        <label class="field">
+          <span>Project</span>
+          <input name="project" list="project-options" maxlength="60" autocomplete="off">
+          <datalist id="project-options"></datalist>
+        </label>
+      </div>
+      <p class="form-error" id="task-error" role="alert"></p>
+      <footer>
+        <button class="btn btn-danger" type="button" id="task-delete" hidden>Delete</button>
+        <span class="spacer"></span>
+        <button class="btn" type="button" id="task-cancel">Cancel</button>
+        <button class="btn btn-primary" type="submit" id="task-save">Save</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

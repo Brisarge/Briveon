@@ -1,0 +1,133 @@
+/* Shared by the public site and the admin app. */
+:root {
+  color-scheme: dark;
+
+  --bg: #060705;
+  --bg-2: #0b0d09;
+  --panel: #10130d;
+  --panel-2: #161a12;
+  --line: rgba(139, 198, 65, 0.16);
+  --line-strong: rgba(139, 198, 65, 0.42);
+
+  --lime: #8bc641;
+  --lime-hi: #c5e418;
+  --lime-glow: rgba(139, 198, 65, 0.35);
+  --on-lime: #070a04;
+
+  --text: #e8f0de;
+  --muted: #9da890;
+  --dim: #6b7560;
+  --danger: #ff6b5e;
+
+  --radius: 14px;
+  --radius-sm: 8px;
+  --max: 1160px;
+  --gutter: clamp(16px, 4vw, 40px);
+
+  --f-display: 'Barlow Semi Condensed', 'Bahnschrift', system-ui, sans-serif;
+  --f-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--lime);
+}
+
+:focus-visible {
+  outline: 2px solid var(--lime-hi);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--lime);
+  color: var(--on-lime);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font: 600 15px/1 var(--f-body);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s var(--ease);
+}
+
+.btn:hover {
+  border-color: var(--lime);
+  color: var(--lime-hi);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--on-lime);
+}
+
+.btn-primary:hover {
+  background: var(--lime-hi);
+  border-color: var(--lime-hi);
+  color: var(--on-lime);
+}
+
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.eyebrow {
+  margin: 0;
+  font: 500 12px/1.4 var(--f-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
