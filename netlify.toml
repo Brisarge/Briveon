@@ -1,0 +1,7 @@
+# This is a plain HTML/CSS/JS site with no compile step.
+# The build simply copies the public site files into `dist`, which matches the
+# publish directory configured in the Netlify UI and keeps non-public folders
+# (supabase/, tools/, .vscode/) out of the deploy.
+[build]
+  publish = "dist"
+  command = "rm -rf dist && mkdir dist && cp -R index.html admin assets css js old dist/"
