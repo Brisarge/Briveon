@@ -63,11 +63,37 @@ try {
           $ext = [IO.Path]::GetExtension($path).ToLowerInvariant()
           $type = $mime[$ext]
           if (-not $type) { $type = 'application/octet-stream' }
-          $bytes = [IO.File]::ReadAllBytes($path)
           $res.ContentType = $type
           $res.Headers.Add('Cache-Control', 'no-store')
-          $res.ContentLength64 = $bytes.Length
-          $res.OutputStream.Write($bytes, 0, $bytes.Length)
+          $res.Headers.Add('Accept-Ranges', 'bytes')
+          $fs = [IO.File]::OpenRead($path)
+          try {
+            $total = $fs.Length
+            $start = 0L
+            $end = $total - 1
+            # Range requests let video/audio load in pieces instead of all at once
+            $range = $req.Headers['Range']
+            if ($range -and $range -match '^bytes=(\d*)-(\d*)$') {
+              if ($Matches[1] -ne '') { $start = [long]$Matches[1] }
+              if ($Matches[2] -ne '') { $end = [Math]::Min([long]$Matches[2], $total - 1) }
+              if ($Matches[1] -eq '' -and $Matches[2] -ne '') { $start = [Math]::Max(0, $total - [long]$Matches[2]); $end = $total - 1 }
+              $res.StatusCode = 206
+              $res.Headers.Add('Content-Range', "bytes $start-$end/$total")
+            }
+            $res.ContentLength64 = $end - $start + 1
+            $fs.Position = $start
+            $left = $end - $start + 1
+            $chunk = New-Object byte[] 65536
+            while ($left -gt 0) {
+              $read = $fs.Read($chunk, 0, [int][Math]::Min($chunk.Length, $left))
+              if ($read -le 0) { break }
+              $res.OutputStream.Write($chunk, 0, $read)
+              $left -= $read
+            }
+          }
+          finally {
+            $fs.Dispose()
+          }
         }
         else {
           $res.StatusCode = 404

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rhythm Rush · Briveon Multimedia</title>
+  <meta name="description" content="Rhythm Rush: a procedural Roblox obby where pendulum-wave platforms move to the music. Brighton's first Roblox project, 2023–2024.">
+  <meta name="theme-color" content="#060705">
+  <link rel="icon" href="assets/images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/project.css">
+  <script type="module" src="js/polyrhythm.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="topbar-brand" href="./">
+      <img src="assets/images/logo.png" alt="" width="28" height="28">
+      <img class="topbar-word" src="assets/images/logo2.png" alt="Briveon Multimedia" height="11">
+    </a>
+    <a class="topbar-back" href="./#work">← All projects</a>
+  </header>
+
+  <main class="article">
+    <h1>Rhythm Rush</h1>
+    <p class="standfirst">A procedural obby that moves to the music. My first Roblox project, built in 2023–2024 and shelved before release.</p>
+    <p class="facts">Roblox · Luau · ~300 hours · I built the main game loop, the procedural obby system and RhythmGen</p>
+
+    <figure class="wide">
+      <video src="assets/video/rhythm-rush.mp4" controls playsinline preload="metadata"></video>
+      <figcaption>Rhythm Rush with the full visuals running. The platforms move on the song's BPM; the colors, the beat sphere and the pulsing outlines react to the live audio.</figcaption>
+    </figure>
+
+    <h2>How it started</h2>
+    <p>I saw a video of a visual polyrhythm and wondered what would happen if I put it into 3D space, so I decided to try turning it into an obby. Before there was any music detection it was called Polyrhythm Dash. The platforms just moved in that sequence and your goal was to get across. Every platform had its own piano note and played it each time it hit the end of its path, so crossing the course played the whole chromatic scale. It was very cool to me at first.</p>
+
+    <figure>
+      <video src="assets/video/polyrhythm-dash.mp4" controls playsinline preload="metadata"></video>
+      <figcaption>Polyrhythm Dash, the first version: 12 platforms, 12 notes.</figcaption>
+    </figure>
+
+    <h2 id="demo">Try it</h2>
+    <p>This is the same setup running in your browser: Polyrhythm Dash's 12 platforms and notes, plus Rhythm Rush's beat detector driving the colors. It starts on Flow, which suits the detector best. Try Space Race too, a track I made from scratch in FL Studio, or load your own song. Switch the ratio to see why I ended up on 63/64. It runs at Rhythm Rush's Easy speed: one swing every two beats.</p>
+  </main>
+
+  <section class="demo" aria-label="Polyrhythm demo">
+    <div class="demo-stage">
+      <canvas id="poly-stage" class="poly-stage" aria-label="Twelve platforms moving in a polyrhythm"></canvas>
+      <div class="demo-graph">
+        <canvas id="poly-graph" aria-label="Loudness graph"></canvas>
+        <p class="graph-key"><span class="k-loud">loudness</span> <span class="k-thr" id="poly-thr-key">average × 1.2</span> <span class="k-beat">beat</span></p>
+      </div>
+    </div>
+
+    <div class="demo-controls">
+      <div class="control">
+        <button class="btn btn-primary play" id="poly-play" type="button">Play</button>
+        <p class="status" id="poly-status" aria-live="polite"></p>
+      </div>
+
+      <div class="control">
+        <span class="control-label">Music</span>
+        <div class="seg" id="poly-sources">
+          <button type="button" class="btn" data-value="flow" aria-pressed="true">Flow</button>
+          <button type="button" class="btn" data-value="space" aria-pressed="false">Space Race</button>
+          <button type="button" class="btn" data-value="file" aria-pressed="false">Your own file…</button>
+          <button type="button" class="btn" data-value="tab" aria-pressed="false">Another tab</button>
+          <button type="button" class="btn" data-value="none" aria-pressed="false">No music</button>
+        </div>
+        <input type="file" id="poly-file" accept="audio/*" hidden>
+        <p class="hint">"Another tab" listens to Spotify, SoundCloud or YouTube playing in a different tab: pick the tab and tick "Share tab audio". Chrome and Edge on desktop only.</p>
+      </div>
+
+      <div class="control">
+        <span class="control-label">Ratio</span>
+        <div class="seg" id="poly-ratios">
+          <button type="button" class="btn" data-value="2" aria-pressed="false">1/2</button>
+          <button type="button" class="btn" data-value="4" aria-pressed="false">3/4</button>
+          <button type="button" class="btn" data-value="8" aria-pressed="false">7/8</button>
+          <button type="button" class="btn" data-value="16" aria-pressed="false">15/16</button>
+          <button type="button" class="btn" data-value="64" aria-pressed="true">63/64</button>
+        </div>
+      </div>
+
+      <div class="control">
+        <span class="control-label">Beat threshold</span>
+        <div class="seg" id="poly-thresholds">
+          <button type="button" class="btn" data-value="mult" aria-pressed="true">Average × 1.2</button>
+          <button type="button" class="btn" data-value="10" aria-pressed="false">Average + 10</button>
+          <button type="button" class="btn" data-value="25" aria-pressed="false">Average + 25</button>
+          <button type="button" class="btn" data-value="50" aria-pressed="false">Average + 50</button>
+          <button type="button" class="btn" data-value="100" aria-pressed="false">Average + 100</button>
+        </div>
+      </div>
+
+      <div class="control control-row">
+        <label class="bpm">
+          <span class="control-label">BPM</span>
+          <input id="poly-bpm" type="number" min="40" max="220" value="130">
+        </label>
+        <button class="btn" id="poly-tap" type="button">Tap tempo</button>
+        <label class="check"><input id="poly-notes" type="checkbox" autocomplete="off"> Platform notes</label>
+      </div>
+
+      <dl class="readouts">
+        <dt>Last platform vs first</dt><dd id="poly-spread">1.17×</dd>
+        <dt>Back in unison every</dt><dd id="poly-realign">32 bars</dd>
+        <dt>Next unison in</dt><dd id="poly-countdown">–</dd>
+      </dl>
+    </div>
+  </section>
+
+  <div class="article">
+    <p class="demo-note"><b>A note on tuning:</b> Space Race actually works pretty poorly with this algorithm, while Flow looks great with it. I tuned the detector around songs with high-impact, bass-heavy hits. Space Race has a much wider spread of sound, so its loudness doesn't spike as clearly on the beat. While tuning different songs I also played with a fixed threshold, the average plus 10, 25, 50 or 100 loudness, instead of 1.2× the average. Switch between them above and compare the two tracks. (The browser's loudness is scaled to roughly match Roblox's 0–1000 range, so the fixed offsets are close but not exact.)</p>
+
+    <h2>From Dash to Rhythm Rush</h2>
+    <p>Then I moved on to beat detection, about 100 songs and a procedural obby generator. That part took over a week of 12–15 hour days. Every round the game picks a song and a difficulty, then builds the course from five random sections out of 22 types. Each section gets its own animation, easing style and speed, and all of it is timed off the song's BPM. Traps like land mines get welded onto the moving platforms, so they ride the rhythm too.</p>
+    <p>I got to the idea of a pendulum wave completely on my own, with no research, just my musical intuition. Mapping it to a line of platforms was the start. Mapping it to an entire 2D grid of platforms was the cherry on top. From there I tied it to different animations on different properties of the bricks (size, position, rotation) and layered visuals on top:</p>
+    <ul>
+      <li>the borders on the blocks pulse directly with the song's loudness</li>
+      <li>an array of colors loops through each section of blocks on every detected beat</li>
+      <li>the beat sphere in the sky grows and shrinks with the music</li>
+    </ul>
+    <p>All of that runs off a single loudness value, which is the only audio data Roblox gave me to work with.</p>
+
+    <h2>Why 63/64</h2>
+    <p>Syncing the animations came down to taking the BPM and running each platform in a section a tiny bit faster than the one before it:</p>
+<pre><code><span class="c">-- each platform in a section runs slightly faster than the one before it</span>
+local newtweentime = tweeninfo.Time / ((delay_count + 63) / 64)</code></pre>
+    <p>I tried other ratios first. Polyrhythm Dash's difficulties used 7/8, 3/4 and 1/2, and I also tried 15/16. The variation at the end of the section was just too big: the last platform always moved far too fast. 63/64 struck the right balance, where the end of a section only gets slightly harder to time.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ratio</th><th>Last platform vs first (12 platforms)</th><th>Back in unison every (Hard: 1 beat per swing)</th></tr></thead>
+        <tbody>
+          <tr><td>1/2</td><td>6.5×</td><td>1 bar</td></tr>
+          <tr><td>3/4</td><td>3.75×</td><td>2 bars</td></tr>
+          <tr><td>7/8</td><td>2.38×</td><td>4 bars</td></tr>
+          <tr><td>15/16</td><td>1.69×</td><td>8 bars</td></tr>
+          <tr class="hl"><td>63/64</td><td>1.17×</td><td>32 bars</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Staying in multiples of 4 to keep it musically in sync was an educated guess I played with, and it holds up. With one beat per swing, platform <i>k</i> makes 63 + <i>k</i> swings in the time the first one makes 64, so every platform lines back up after exactly 64 round trips: 128 beats, or 32 bars of 4/4. The chaos resolves right on a phrase boundary.</p>
+
+    <h2>The beat detector</h2>
+    <p>Roblox only gives you a song's loudness on the player's own machine, so the color system runs there. It keeps the last 20 loudness readings and counts a beat when the current one is 20% above their average. It won't fire again until the loudness drops back under that line, so one long hit doesn't count as five beats. The demo above runs the same loop on whatever you play.</p>
+<pre><code>table.insert(loudnessHistory, loudness)
+if #loudnessHistory > maxHistorySize then
+	table.remove(loudnessHistory, 1)
+end
+
+local sum = 0
+for _, value in ipairs(loudnessHistory) do
+	sum = sum + value
+end
+threshold = sum / #loudnessHistory * 1.2
+
+if loudness < threshold then
+	loud_debounce = false
+end
+if loudness >= threshold and not loud_debounce then
+	loud_debounce = true
+	<span class="c">-- step every platform one color forward</span>
+end</code></pre>
+
+    <h2>Why it never shipped</h2>
+    <p>Rog hopped on in the middle of development. I posted about the project in a Discord, he DM'd me, and that's how we started working together. We've worked as a duo ever since: Rog handles data, security and gameplay balance, and I handle game design and creative engineering (map building, visual scripting and overall direction). On Rhythm Rush my part was the main game loop, the procedural obby system and RhythmGen.</p>
+    <p>We never published it because we couldn't figure out a good progression loop for players to race, earn and spend, so we shelved it and moved on to other projects. I'm still incredibly proud of it. I had just gotten back into programming for the first time since I was a kid, and I'd picked up music production as a hobby, so I wanted to do something ambitious that used both.</p>
+
+    <h2>What I'd do differently</h2>
+    <ul>
+      <li><b>Lock the motion to the song's playback position.</b> Polyrhythm Dash scheduled every loop from the start time and stayed in sync. Rhythm Rush replays each tween when it finishes, so it slips about a frame per loop and the 32-bar line-up doesn't land exactly.</li>
+      <li><b>Measure the detector's window in time, not frames,</b> so it behaves the same at 60 fps and 144 fps.</li>
+      <li><b>Describe the 22 section types as data in one table</b> instead of 22 nearly identical functions.</li>
+      <li><b>Design the progression loop before the tech.</b> That's what actually stopped it.</li>
+    </ul>
+
+    <p class="end"><a href="./#work">← Back to all projects</a></p>
+  </div>
+</body>
+</html>
