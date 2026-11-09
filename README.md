@@ -15,7 +15,7 @@ Live at **https://briveon.net** (hosted on Netlify). Plain HTML/CSS/JS with no b
 | `supabase/schema.sql`, `supabase/002_vault_colors.sql` | Database setup for HQ (run each once, in that order) |
 | `tools/pull-vault.ps1` | Downloads a read-only copy of the vault for your AI |
 | `tools/serve.ps1` | Local preview server (no Node/Python needed) |
-| `netlify.toml` | Netlify deploy settings (no build, serve the repo root) |
+| `netlify.toml` | Netlify deploy settings (copies the public site into `dist/`) |
 | `old/` | Old landing page experiments, not linked from the site |
 
 ## Preview locally
@@ -30,7 +30,7 @@ Then open http://localhost:5173. To try HQ without Supabase, open http://localho
 
 Push to `main`. Netlify picks up the push and redeploys briveon.net within a minute or so.
 
-`netlify.toml` tells Netlify there's no build step and to serve the repo root. It overrides the build settings in the Netlify dashboard. If a deploy doesn't show up, check the Netlify dashboard under **Deploys** for a failed build and its log.
+`netlify.toml` tells Netlify to copy only the public site files into `dist/` and publish that, so a new top-level page or folder must be added to its list. It overrides the build settings in the Netlify dashboard. If a deploy doesn't show up, check the Netlify dashboard under **Deploys** for a failed build and its log.
 
 ## Admin setup (Supabase, free)
 

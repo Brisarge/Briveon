@@ -1,9 +1,10 @@
 # Netlify settings for briveon.net. These override the build settings in the
-# Netlify dashboard. The site has no build step: Netlify serves the repo
-# files as they are.
+# Netlify dashboard. Nothing gets compiled: the build only copies the public
+# site into dist/, so the README, SQL files and scripts aren't published.
+# Add any new top-level site file or folder to this list.
 [build]
-  publish = "."
-  command = "echo 'No build step: plain static site'"
+  publish = "dist"
+  command = "mkdir -p dist && cp -r index.html rhythm-rush.html css js assets admin dist/"
 
 # Keep the admin area out of search results.
 [[headers]]
