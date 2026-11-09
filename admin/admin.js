@@ -8,6 +8,7 @@ import * as board from './tools/board.js';
 import * as drawer from './tools/drawer.js';
 import * as vault from './tools/vault.js';
 import * as activity from './tools/activity.js';
+import * as workbench from './tools/workbench.js';
 
 const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/+esm';
 
@@ -55,6 +56,9 @@ const ctx = {
   listTasks: () => board.list(),
   listNotes: () => vault.list(),
   resolveNote: (name) => vault.resolveLink(name),
+  createNote: (path, content) => vault.createNote(path, content),
+  addTaskToBundle: (id) => workbench.addTask(id),
+  addNoteToBundle: (id) => workbench.addNote(id),
   openTask(id) {
     location.hash = `#board/${id}`;
   },
@@ -68,6 +72,7 @@ const ctx = {
     board.render();
     drawer.refresh();
     vault.refreshLinked();
+    workbench.refresh();
   },
 };
 
@@ -82,7 +87,7 @@ async function boot() {
 
   if (DEMO) {
     ctx.api = demoApi();
-    window.__hq = { api: ctx.api, vault, board, drawer, activity, data };
+    window.__hq = { api: ctx.api, vault, board, drawer, activity, workbench, data };
     enterApp(DEMO_USER);
     return;
   }
@@ -223,6 +228,7 @@ async function enterApp(nextUser) {
     drawer.init(ctx, board);
     vault.init(ctx);
     activity.init(ctx);
+    workbench.init(ctx);
     toolsReady = true;
   }
 
@@ -259,6 +265,7 @@ function leaveApp() {
   unsubscribe = null;
   user = null;
   drawer.close();
+  workbench.close();
   board.clear();
   vault.clear();
   activity.clear();

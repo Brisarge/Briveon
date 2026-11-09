@@ -387,6 +387,14 @@ export function openId(id) {
   open(id);
 }
 
+// Used by the AI bundle to save a template or rules note.
+export async function createNote(path, content) {
+  const [row] = await ctx.api.insertNotes([{ path, content }]);
+  notes.set(row.id, row);
+  renderTree();
+  return row;
+}
+
 export const get = (id) => notes.get(id);
 export const list = () => [...notes.values()];
 
@@ -816,6 +824,10 @@ export function init(context) {
     },
   );
   applyMode();
+
+  $('#note-bundle').addEventListener('click', () => {
+    if (currentId) ctx.addNoteToBundle(currentId);
+  });
 
   $('#note-discuss').addEventListener('click', () => {
     threadOpen = !threadOpen;

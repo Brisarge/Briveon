@@ -64,6 +64,9 @@ export function open(id) {
     if (t) board.openDialog(t);
   });
 
+  const bundleBtn = el('button', { class: 'btn btn-small', type: 'button', text: 'Add to AI bundle' });
+  bundleBtn.addEventListener('click', () => ctx.addTaskToBundle(currentId));
+
   parts = {
     tag: el('span', { class: 'tag' }),
     title: el('h2', { id: 'drawer-title' }),
@@ -92,7 +95,7 @@ export function open(id) {
   dialog.replaceChildren(
     parts.head,
     el('div', { class: 'drawer-scroll' }, [
-      parts.statuses,
+      el('div', { class: 'drawer-actions' }, [parts.statuses, bundleBtn]),
       parts.notes,
       el('section', { class: 'drawer-section' }, [
         el('div', { class: 'drawer-section-head' }, [el('h3', { text: 'Linked notes' }), parts.addLink]),

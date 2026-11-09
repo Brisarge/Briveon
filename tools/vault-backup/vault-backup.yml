@@ -1,0 +1,52 @@
+# Nightly vault backup. This file goes in your PRIVATE backup repo at
+# .github/workflows/vault-backup.yml, never in the public site repo.
+# It needs one repo secret: BRIVEON_VAULT_TOKEN (a token labelled 'Backup').
+name: Vault backup
+
+on:
+  schedule:
+    - cron: '17 8 * * *' # every day, at a time in UTC
+  workflow_dispatch: # also adds a "Run workflow" button for testing
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: windows-latest
+    steps:
+      - name: Keep files exactly as written
+        shell: powershell
+        run: git config --global core.autocrlf false
+
+      - name: Get the backup repo
+        uses: actions/checkout@v4
+        with:
+          path: backup
+
+      - name: Get the pull script
+        uses: actions/checkout@v4
+        with:
+          repository: Brisarge/Briveon
+          path: site
+
+      - name: Pull the vault
+        shell: powershell
+        env:
+          BRIVEON_VAULT_TOKEN: ${{ secrets.BRIVEON_VAULT_TOKEN }}
+        run: .\site\tools\pull-vault.ps1 -Out backup\vault
+
+      - name: Save changes
+        shell: powershell
+        working-directory: backup
+        run: |
+          git add -A vault
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host 'No vault changes today.'
+            exit 0
+          }
+          git config user.name 'Vault backup'
+          git config user.email 'vault-backup@users.noreply.github.com'
+          git commit -m "Vault backup $(Get-Date -Format yyyy-MM-dd)"
+          git push
