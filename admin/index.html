@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
   <link rel="stylesheet" href="../css/tokens.css">
   <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="vault.css">
   <script type="module" src="admin.js"></script>
 </head>
 <body>
@@ -28,14 +29,7 @@
       <img class="auth-logo" src="../assets/images/logo.png" alt="" width="56" height="56">
       <p class="eyebrow">Briveon HQ</p>
       <h1>Not connected yet</h1>
-      <p class="muted">The admin area needs a free Supabase project for logins and the shared board.</p>
-      <ol class="setup-steps">
-        <li>Create a project at supabase.com.</li>
-        <li>Run <code>supabase/schema.sql</code> in its SQL Editor.</li>
-        <li>Add your and Rog's logins, then put both emails in the <code>admins</code> table.</li>
-        <li>Paste the Project URL and publishable key into <code>admin/config.js</code>.</li>
-      </ol>
-      <p class="muted small">Full steps are in README.md.</p>
+      <p class="muted">The admin area needs a free Supabase project for logins and shared data. Setup steps are in README.md.</p>
       <a class="btn" href="../">Back to site</a>
     </div>
   </section>
@@ -63,13 +57,15 @@
   <!-- The app -->
   <div id="view-app" hidden>
     <header class="hq-top">
-      <a class="hq-brand" href="./">
+      <a class="hq-brand" href="#board">
         <img src="../assets/images/logo.png" alt="" width="30" height="30">
         <span>Briveon <b>HQ</b></span>
       </a>
       <nav class="hq-tabs" aria-label="Tools">
-        <a class="hq-tab" aria-current="page" href="#board">Task board</a>
+        <a class="hq-tab" id="tab-board" href="#board">Task board</a>
+        <a class="hq-tab" id="tab-vault" href="#vault">Vault</a>
       </nav>
+      <div class="chips" id="filter-people" role="group" aria-label="Filter by person"></div>
       <div class="hq-user">
         <span class="sync" id="sync" title="Live updates"><i></i><span id="sync-label">Connecting</span></span>
         <span class="hq-email" id="hq-email"></span>
@@ -78,22 +74,72 @@
       </div>
     </header>
 
-    <main class="hq-main" id="board">
+    <p class="schema-banner" id="schema-banner" hidden>The vault and colors need a database update. Run <code>supabase/002_vault_colors.sql</code> in the Supabase SQL Editor, then reload.</p>
+
+    <main class="hq-main" id="tool-board">
       <div class="toolbar">
         <div class="toolbar-left">
           <h1>Task board</h1>
           <button class="btn btn-primary" id="new-task" type="button">+ New task</button>
         </div>
         <div class="toolbar-right">
-          <div class="chips" id="filter-people" role="group" aria-label="Filter by person"></div>
           <label class="select-wrap">
             <span class="sr-only">Filter by project</span>
             <select id="filter-project"></select>
           </label>
+          <button class="btn btn-small" id="project-colors" type="button">Project colors</button>
         </div>
       </div>
-
       <div class="board" id="board-columns"></div>
+    </main>
+
+    <main class="vault" id="tool-vault" hidden>
+      <aside class="vault-side">
+        <div class="vault-actions">
+          <button class="btn btn-primary btn-small" id="note-new" type="button">+ New note</button>
+          <button class="btn btn-small" id="note-import" type="button">Import vault</button>
+          <input type="file" id="note-import-input" webkitdirectory multiple hidden>
+        </div>
+        <input class="note-search" id="note-search" type="search" placeholder="Search notes (Ctrl+K)" aria-label="Search notes" autocomplete="off">
+        <div class="note-tree" id="note-tree"></div>
+      </aside>
+
+      <div class="vault-main">
+        <div class="vault-empty" id="vault-empty">
+          <h1>Vault</h1>
+          <p class="muted">Pick a note, create one, or import your Obsidian vault folder.</p>
+        </div>
+
+        <div class="note-pane" id="note-pane" hidden>
+          <header class="note-head">
+            <button class="btn btn-small note-back" id="note-back" type="button">← Notes</button>
+            <div class="note-heading">
+              <h1 id="note-title"></h1>
+              <p class="note-meta" id="note-meta"></p>
+            </div>
+            <div class="note-tools">
+              <div class="chips" id="note-modes" role="group" aria-label="View">
+                <button class="chip" type="button" data-mode="edit">Edit</button>
+                <button class="chip" type="button" data-mode="split">Split</button>
+                <button class="chip" type="button" data-mode="preview">Preview</button>
+              </div>
+              <button class="btn btn-small" id="note-history" type="button">History</button>
+              <button class="btn btn-small" id="note-rename" type="button">Rename</button>
+              <button class="btn btn-small btn-danger" id="note-delete" type="button">Delete</button>
+              <button class="btn btn-small btn-primary" id="note-save" type="button" disabled>Saved</button>
+            </div>
+          </header>
+
+          <div class="note-banner" id="note-banner" role="status" hidden></div>
+
+          <div class="note-body" id="note-body">
+            <textarea class="note-editor" id="note-editor" spellcheck="false" aria-label="Note text"></textarea>
+            <article class="note-preview md" id="note-preview"></article>
+          </div>
+
+          <section class="backlinks" id="note-backlinks" aria-label="Notes linking here"></section>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -101,7 +147,7 @@
     <form method="dialog" id="task-form">
       <header>
         <h2 id="task-dialog-title">New task</h2>
-        <button class="icon-btn" type="button" value="cancel" id="task-close" aria-label="Close">✕</button>
+        <button class="icon-btn" type="button" id="task-close" aria-label="Close">✕</button>
       </header>
       <label class="field">
         <span>Title</span>
@@ -129,6 +175,10 @@
           <input name="project" list="project-options" maxlength="60" autocomplete="off">
           <datalist id="project-options"></datalist>
         </label>
+      </div>
+      <div class="field">
+        <span>Task color</span>
+        <div id="task-color"></div>
       </div>
       <p class="form-error" id="task-error" role="alert"></p>
       <footer>
