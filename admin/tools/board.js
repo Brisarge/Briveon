@@ -1,4 +1,4 @@
-// Task board: columns, drag and drop, task dialog, color coding.
+// Task board: columns, drag and drop, quick actions, task dialog, color coding.
 
 import { $, el, store, toast, friendly, confirmModal, modal } from '../lib/ui.js';
 import { taskColor, projectColor, swatchPicker } from '../lib/colors.js';
@@ -88,6 +88,61 @@ export function clear() {
   tasks.clear();
 }
 
+export const get = (id) => tasks.get(id);
+export const list = () => [...tasks.values()];
+
+const noteName = (path) => path.split('/').pop().replace(/\.md$/i, '');
+
+// Moves a task to the bottom of another column.
+export async function moveTo(task, status) {
+  const before = { ...task };
+  Object.assign(task, { status, position: Date.now() });
+  ctx.changed();
+  try {
+    const row = await ctx.api.updateTask(task.id, { status, position: task.position });
+    tasks.set(row.id, row);
+  } catch (err) {
+    tasks.set(task.id, before);
+    toast(friendly(err));
+  }
+  ctx.changed();
+}
+
+function taskFooter(task) {
+  const foot = el('div', { class: 'task-foot' });
+
+  if (ctx.state.threadsReady) {
+    const linked = ctx.data.links
+      .filter((l) => l.task_id === task.id)
+      .map((l) => ctx.getNote(l.note_id))
+      .filter(Boolean);
+    linked.slice(0, 2).forEach((note) => {
+      const chip = el('button', { class: 'note-chip', type: 'button', title: `Open ${note.path}`, text: noteName(note.path) });
+      chip.addEventListener('click', () => ctx.openNote(note.id));
+      foot.append(chip);
+    });
+    if (linked.length > 2) foot.append(el('span', { class: 'task-count', text: `+${linked.length - 2} notes` }));
+
+    const count = [...ctx.data.comments.values()].filter((c) => c.task_id === task.id).length;
+    if (count) foot.append(el('span', { class: 'task-count', text: `${count} comment${count === 1 ? '' : 's'}` }));
+  }
+
+  const at = COLUMNS.findIndex((c) => c.key === task.status);
+  const next = COLUMNS[at + 1];
+  if (next) {
+    const move = el('button', {
+      class: 'task-next',
+      type: 'button',
+      title: `Move to ${next.label}`,
+      'aria-label': `Move "${task.title}" to ${next.label}`,
+      text: `${next.label} →`,
+    });
+    move.addEventListener('click', () => moveTo(task, next.key));
+    foot.append(move);
+  }
+  return foot;
+}
+
 function allProjects() {
   const set = new Set(PROJECTS);
   for (const name of ctx.state.projects.keys()) set.add(name);
@@ -152,9 +207,9 @@ function taskCard(task) {
     el('h3', { text: task.title }),
     task.notes ? el('p', { class: 'task-notes', text: task.notes }) : null,
   ]);
-  open.addEventListener('click', () => openDialog(task));
+  open.addEventListener('click', () => (ctx.state.threadsReady ? ctx.openTask(task.id) : openDialog(task)));
 
-  const li = el('li', { class: 'task', draggable: 'true', 'data-id': task.id }, open);
+  const li = el('li', { class: 'task', draggable: 'true', 'data-id': task.id }, [open, taskFooter(task)]);
   const color = taskColor(task, ctx.state.projects);
   if (color) li.style.setProperty('--task-color', color);
 
@@ -254,7 +309,7 @@ function renderColorPicker(value) {
   );
 }
 
-function openDialog(task, status = 'todo') {
+export function openDialog(task, status = 'todo') {
   const person = ctx.state.person;
   editingId = task?.id ?? null;
   $('#task-dialog-title').textContent = task ? 'Edit task' : 'New task';
@@ -306,7 +361,7 @@ async function onSubmit(e) {
     }
     tasks.set(row.id, row);
     closeDialog();
-    render();
+    ctx.changed();
   } catch (err) {
     $('#task-error').textContent = friendly(err);
   } finally {
@@ -318,13 +373,13 @@ async function onDelete() {
   const id = editingId;
   const task = id && tasks.get(id);
   if (!task) return;
-  const yes = await confirmModal('Delete task', `Delete "${task.title}"?`);
+  const yes = await confirmModal('Delete task', `Delete "${task.title}" and its discussion?`);
   if (!yes) return;
   try {
     await ctx.api.removeTask(id);
     tasks.delete(id);
     closeDialog();
-    render();
+    ctx.changed();
   } catch (err) {
     $('#task-error').textContent = friendly(err);
   }

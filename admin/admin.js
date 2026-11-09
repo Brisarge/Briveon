@@ -5,7 +5,9 @@ import { $, el, store, toast, friendly, isMissingTable, modal } from './lib/ui.j
 import { supabaseApi } from './lib/api.js';
 import { demoApi, DEMO_USER } from './lib/demo.js';
 import * as board from './tools/board.js';
+import * as drawer from './tools/drawer.js';
 import * as vault from './tools/vault.js';
+import * as activity from './tools/activity.js';
 
 const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/+esm';
 
@@ -15,25 +17,58 @@ const DEMO =
   new URLSearchParams(location.search).has('demo') && ['localhost', '127.0.0.1'].includes(location.hostname);
 
 const VIEWS = ['loading', 'setup', 'login', 'app'];
-const TABS = ['board', 'vault'];
+const TABS = ['board', 'vault', 'activity'];
 
 let sb = null;
 let user = null;
 let unsubscribe = null;
 let toolsReady = false;
 
+// Shared between tools, so a task and a note can show each other's links and comments.
+const data = {
+  comments: new Map(),
+  links: [],
+  addLink(row) {
+    if (!data.links.some((l) => l.task_id === row.task_id && l.note_id === row.note_id)) data.links.push(row);
+  },
+  removeLink(taskId, noteId) {
+    data.links = data.links.filter((l) => !(l.task_id === taskId && l.note_id === noteId));
+  },
+};
+
 const ctx = {
   api: null,
+  data,
   state: {
     person: store.get('person', 'all'),
     projects: new Map(),
     profiles: new Map(),
     schemaReady: false,
+    threadsReady: false,
   },
   get user() {
     return user;
   },
   nameOf: (id) => ctx.state.profiles.get(id) || 'Someone',
+  getTask: (id) => board.get(id),
+  getNote: (id) => vault.get(id),
+  listTasks: () => board.list(),
+  listNotes: () => vault.list(),
+  resolveNote: (name) => vault.resolveLink(name),
+  openTask(id) {
+    location.hash = `#board/${id}`;
+  },
+  openNote(id) {
+    drawer.close();
+    if (!location.hash.startsWith('#vault')) location.hash = '#vault';
+    vault.openId(id);
+  },
+  // Something shared changed: redraw everything that shows it.
+  changed() {
+    board.render();
+    drawer.refresh();
+    vault.refreshLinked();
+  },
 };
 
 function show(name) {
@@ -47,7 +82,7 @@ async function boot() {
 
   if (DEMO) {
     ctx.api = demoApi();
-    window.__hq = { api: ctx.api, vault, board };
+    window.__hq = { api: ctx.api, vault, board, drawer, activity, data };
     enterApp(DEMO_USER);
     return;
   }
@@ -123,7 +158,7 @@ async function loadShared() {
   const { api, state } = ctx;
   try {
     const [projects, profiles] = await Promise.all([api.listProjects(), api.listProfiles()]);
-    await api.listNotes(); // also proves the notes table exists
+    await api.listVersions('00000000-0000-0000-0000-000000000000'); // proves the vault tables exist
     state.projects = new Map(projects.map((p) => [p.name, p.color]));
     state.profiles = new Map(profiles.map((p) => [p.id, p.name]));
     state.schemaReady = true;
@@ -131,7 +166,36 @@ async function loadShared() {
     state.schemaReady = false;
     if (!isMissingTable(err)) toast(friendly(err), 8000);
   }
-  $('#schema-banner').hidden = state.schemaReady;
+
+  await loadThreads();
+
+  const banner = $('#schema-banner');
+  const missing = !state.schemaReady
+    ? '002_vault_colors.sql and 003_threads_activity.sql'
+    : !state.threadsReady
+      ? '003_threads_activity.sql'
+      : '';
+  banner.hidden = !missing;
+  banner.textContent = missing
+    ? `Some features need a database update. Run ${missing} from the supabase folder in the Supabase SQL Editor, then reload.`
+    : '';
+}
+
+async function loadThreads() {
+  const { api, state } = ctx;
+  if (!state.schemaReady) {
+    state.threadsReady = false;
+    return;
+  }
+  try {
+    const [comments, links] = await Promise.all([api.listComments(), api.listLinks()]);
+    data.comments = new Map(comments.map((c) => [c.id, c]));
+    data.links = links;
+    state.threadsReady = true;
+  } catch (err) {
+    state.threadsReady = false;
+    if (!isMissingTable(err)) toast(friendly(err), 8000);
+  }
 }
 
 async function askWhoAmI() {
@@ -156,7 +220,9 @@ async function enterApp(nextUser) {
 
   if (!toolsReady) {
     board.init(ctx);
+    drawer.init(ctx, board);
     vault.init(ctx);
+    activity.init(ctx);
     toolsReady = true;
   }
 
@@ -172,10 +238,13 @@ async function enterApp(nextUser) {
     /* base schema not installed: board.load reports it */
   }
 
-  await Promise.all([board.load(), vault.load()]);
+  await Promise.all([board.load(), vault.load(), activity.load()]);
+  ctx.changed();
   route();
 
-  const tables = ctx.state.schemaReady ? ['tasks', 'notes', 'projects', 'profiles'] : ['tasks'];
+  const tables = ['tasks'];
+  if (ctx.state.schemaReady) tables.push('notes', 'projects', 'profiles');
+  if (ctx.state.threadsReady) tables.push('task_notes', 'comments', 'activity');
   unsubscribe = ctx.api.subscribe(tables, onRemote, (status) => {
     const live = status === 'SUBSCRIBED';
     $('#sync').classList.toggle('live', live);
@@ -189,28 +258,60 @@ function leaveApp() {
   unsubscribe?.();
   unsubscribe = null;
   user = null;
+  drawer.close();
   board.clear();
   vault.clear();
+  activity.clear();
+  data.comments = new Map();
+  data.links = [];
 }
 
-function onRemote(table, payload) {
+async function onRemote(table, payload) {
   const { state } = ctx;
-  if (table === 'tasks') board.onRemote(payload);
-  else if (table === 'notes') vault.onRemote(payload);
-  else if (table === 'projects') {
-    if (payload.eventType === 'DELETE') state.projects.delete(payload.old.name);
-    else state.projects.set(payload.new.name, payload.new.color);
-    board.render();
-  } else if (table === 'profiles') {
-    if (payload.eventType !== 'DELETE') state.profiles.set(payload.new.id, payload.new.name);
-    vault.render();
+  const gone = payload.eventType === 'DELETE';
+
+  switch (table) {
+    case 'tasks':
+      board.onRemote(payload);
+      drawer.refresh();
+      vault.refreshLinked();
+      break;
+    case 'notes':
+      await vault.onRemote(payload);
+      ctx.changed();
+      break;
+    case 'projects':
+      if (gone) state.projects.delete(payload.old.name);
+      else state.projects.set(payload.new.name, payload.new.color);
+      ctx.changed();
+      break;
+    case 'profiles':
+      if (!gone) state.profiles.set(payload.new.id, payload.new.name);
+      ctx.changed();
+      vault.render();
+      activity.render();
+      break;
+    case 'comments':
+      if (gone) data.comments.delete(payload.old.id);
+      else data.comments.set(payload.new.id, payload.new);
+      ctx.changed();
+      break;
+    case 'task_notes':
+      if (gone) data.removeLink(payload.old.task_id, payload.old.note_id);
+      else data.addLink(payload.new);
+      ctx.changed();
+      break;
+    case 'activity':
+      activity.onRemote(payload);
+      break;
+    default:
   }
 }
 
-window.addEventListener('focus', () => {
+window.addEventListener('focus', async () => {
   if (!user) return;
-  board.load();
-  vault.load();
+  await Promise.all([board.load(), vault.load(), loadThreads(), activity.load()]);
+  ctx.changed();
 });
 
 // ---------- Team filter ----------
@@ -231,6 +332,7 @@ function buildPeopleFilter() {
       people.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
       board.render();
       vault.render();
+      activity.render();
     });
     people.append(chip);
   }
@@ -255,6 +357,13 @@ function route() {
     if (t === tab) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   }
+
+  activity.setVisible(tab === 'activity');
+  if (tab === 'activity') activity.load();
+
+  if (tab === 'board' && rest[0]) drawer.open(rest[0]);
+  else drawer.close();
+
   if (tab === 'vault' && rest.length) vault.openPath(rest.join('/'));
 }
 
@@ -266,6 +375,7 @@ document.addEventListener('keydown', (e) => {
   if (!user) return;
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
     e.preventDefault();
+    drawer.close();
     if (!location.hash.startsWith('#vault')) location.hash = '#vault';
     vault.focusSearch();
   }

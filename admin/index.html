@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="../css/tokens.css">
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="vault.css">
+  <link rel="stylesheet" href="threads.css">
   <script type="module" src="admin.js"></script>
 </head>
 <body>
@@ -64,6 +65,7 @@
       <nav class="hq-tabs" aria-label="Tools">
         <a class="hq-tab" id="tab-board" href="#board">Task board</a>
         <a class="hq-tab" id="tab-vault" href="#vault">Vault</a>
+        <a class="hq-tab" id="tab-activity" href="#activity">Activity <span class="tab-badge" id="activity-badge" hidden></span></a>
       </nav>
       <div class="chips" id="filter-people" role="group" aria-label="Filter by person"></div>
       <div class="hq-user">
@@ -74,7 +76,7 @@
       </div>
     </header>
 
-    <p class="schema-banner" id="schema-banner" hidden>The vault and colors need a database update. Run <code>supabase/002_vault_colors.sql</code> in the Supabase SQL Editor, then reload.</p>
+    <p class="schema-banner" id="schema-banner" hidden></p>
 
     <main class="hq-main" id="tool-board">
       <div class="toolbar">
@@ -123,6 +125,7 @@
                 <button class="chip" type="button" data-mode="split">Split</button>
                 <button class="chip" type="button" data-mode="preview">Preview</button>
               </div>
+              <button class="btn btn-small" id="note-discuss" type="button" aria-expanded="false">Discussion</button>
               <button class="btn btn-small" id="note-history" type="button">History</button>
               <button class="btn btn-small" id="note-rename" type="button">Rename</button>
               <button class="btn btn-small btn-danger" id="note-delete" type="button">Delete</button>
@@ -132,14 +135,28 @@
 
           <div class="note-banner" id="note-banner" role="status" hidden></div>
 
-          <div class="note-body" id="note-body">
-            <textarea class="note-editor" id="note-editor" spellcheck="false" aria-label="Note text"></textarea>
-            <article class="note-preview md" id="note-preview"></article>
+          <div class="note-work">
+            <div class="note-body" id="note-body">
+              <textarea class="note-editor" id="note-editor" spellcheck="false" aria-label="Note text"></textarea>
+              <article class="note-preview md" id="note-preview"></article>
+            </div>
+            <aside class="note-thread" id="note-thread" aria-label="Discussion" hidden></aside>
           </div>
 
-          <section class="backlinks" id="note-backlinks" aria-label="Notes linking here"></section>
+          <section class="backlinks" id="note-backlinks" aria-label="Links to this note"></section>
         </div>
       </div>
+    </main>
+
+    <main class="activity" id="tool-activity" hidden>
+      <div class="toolbar">
+        <div class="toolbar-left"><h1>Activity</h1></div>
+        <div class="toolbar-right">
+          <div class="chips" id="activity-kinds" role="group" aria-label="Filter by type"></div>
+        </div>
+      </div>
+      <div class="activity-feed" id="activity-feed"></div>
+      <button class="btn activity-more" id="activity-more" type="button" hidden>Load older</button>
     </main>
   </div>
 

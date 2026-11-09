@@ -2,9 +2,9 @@
 // search, Obsidian import, version history and edit-conflict protection.
 
 import { $, el, store, toast, friendly, modal, confirmModal, timeAgo } from '../lib/ui.js';
+import { loadMarkdown, renderInto, handleLinkClick } from '../lib/markdown.js';
+import { createThread, createPicker } from '../lib/thread.js';
 
-const MARKED_CDN = 'https://cdn.jsdelivr.net/npm/marked@12.0.2/+esm';
-const PURIFY_CDN = 'https://cdn.jsdelivr.net/npm/dompurify@3.1.6/+esm';
 const MAX_NOTE = 1000000;
 
 let ctx;
@@ -15,8 +15,9 @@ let dirty = false;
 let query = '';
 let mode = store.get('noteMode', 'split');
 let collapsed = new Set(readCollapsed());
-let renderMarkdown = null;
 let previewTimer = 0;
+let thread = null;
+let threadOpen = store.get('noteThread', '0') === '1';
 
 const tree = $('#note-tree');
 const editor = $('#note-editor');
@@ -59,7 +60,7 @@ function findByPath(path) {
 }
 
 // Same rules as Obsidian: full path, or just the note's name anywhere in the vault.
-function resolveLink(target) {
+export function resolveLink(target) {
   const clean = target.split('#')[0].trim().replace(/\.md$/i, '').toLowerCase();
   if (!clean) return null;
   const sorted = [...notes.values()].sort((a, b) => a.path.length - b.path.length);
@@ -76,60 +77,8 @@ function linksIn(content) {
 
 // ---------- Markdown ----------
 
-async function loadMarkdown() {
-  try {
-    const [{ marked }, purify] = await Promise.all([import(MARKED_CDN), import(PURIFY_CDN)]);
-    const DOMPurify = purify.default;
-    const esc = (s) =>
-      s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-
-    marked.use({
-      gfm: true,
-      breaks: true,
-      extensions: [
-        {
-          name: 'wikilink',
-          level: 'inline',
-          start: (src) => src.indexOf('[['),
-          tokenizer(src) {
-            const m = /^!?\[\[([^\]\n|]+)(?:\|([^\]\n]+))?\]\]/.exec(src);
-            if (m) return { type: 'wikilink', raw: m[0], target: m[1].trim(), text: (m[2] || m[1]).trim() };
-            return undefined;
-          },
-          renderer: (t) => `<a class="wikilink" href="#" data-note="${esc(t.target)}">${esc(t.text)}</a>`,
-        },
-      ],
-    });
-
-    renderMarkdown = (source) => {
-      const body = source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
-      // Notes are shared text, so nothing in them is allowed to run in this logged-in page.
-      return DOMPurify.sanitize(marked.parse(body), {
-        FORBID_TAGS: ['style', 'form', 'iframe', 'object', 'embed', 'button', 'textarea', 'select'],
-        FORBID_ATTR: ['style'],
-      });
-    };
-    if (currentId) updatePreview();
-  } catch (err) {
-    console.error(err);
-    toast("Couldn't load the Markdown preview. Editing still works.", 6000);
-  }
-}
-
 function updatePreview() {
-  if (!renderMarkdown) {
-    preview.textContent = editor.value;
-    return;
-  }
-  preview.innerHTML = renderMarkdown(editor.value);
-  preview.querySelectorAll('a').forEach((a) => {
-    if (a.classList.contains('wikilink')) {
-      if (!resolveLink(a.dataset.note)) a.classList.add('missing');
-    } else if (/^https?:/i.test(a.getAttribute('href') || '')) {
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-    }
-  });
+  renderInto(preview, editor.value, resolveLink);
 }
 
 // ---------- Tree ----------
@@ -270,18 +219,97 @@ function renderBacklinks() {
   const hits = [...notes.values()].filter(
     (n) => n.id !== currentId && linksIn(n.content).some((t) => resolveLink(t)?.id === currentId),
   );
-  if (!hits.length) {
-    box.replaceChildren();
-    return;
+  const nodes = [];
+  if (hits.length) {
+    nodes.push(
+      el('h2', { text: 'Linked from' }),
+      ...hits.map((n) => {
+        const b = el('button', { class: 'backlink', type: 'button', text: baseName(n.path), title: n.path });
+        b.addEventListener('click', () => open(n.id));
+        return b;
+      }),
+    );
   }
-  box.replaceChildren(
-    el('h2', { text: 'Linked from' }),
-    ...hits.map((n) => {
-      const b = el('button', { class: 'backlink', type: 'button', text: baseName(n.path), title: n.path });
-      b.addEventListener('click', () => open(n.id));
-      return b;
-    }),
-  );
+
+  if (ctx.state.threadsReady) {
+    const tasks = ctx.data.links
+      .filter((l) => l.note_id === currentId)
+      .map((l) => ctx.getTask(l.task_id))
+      .filter(Boolean);
+    nodes.push(
+      el('h2', { text: 'Tasks' }),
+      ...tasks.map((t) => {
+        const b = el('button', { class: 'backlink backlink-task', type: 'button', text: t.title, title: `Open task: ${t.title}` });
+        b.addEventListener('click', () => ctx.openTask(t.id));
+        return b;
+      }),
+    );
+    const add = el('button', { class: 'backlink backlink-add', type: 'button', text: '+ Link task' });
+    add.addEventListener('click', linkTask);
+    nodes.push(add);
+  }
+  box.replaceChildren(...nodes);
+}
+
+function linkTask() {
+  const noteId = currentId;
+  let finish = null;
+  const picker = createPicker({
+    placeholder: 'Search tasks to link',
+    items: () => {
+      const linked = new Set(ctx.data.links.filter((l) => l.note_id === noteId).map((l) => l.task_id));
+      return ctx
+        .listTasks()
+        .filter((t) => !linked.has(t.id))
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .map((t) => ({ id: t.id, label: t.title, sub: t.project || '' }));
+    },
+    onPick: async (item) => {
+      try {
+        const row = await ctx.api.linkNote(item.id, noteId);
+        ctx.data.addLink(row);
+        finish?.(null);
+        ctx.changed();
+      } catch (err) {
+        toast(friendly(err), 6000);
+      }
+    },
+  });
+  modal({
+    title: 'Link a task',
+    body: picker.el,
+    buttons: [{ label: 'Cancel' }],
+    onOpen(_dialog, close) {
+      finish = close;
+      picker.focus();
+    },
+  });
+}
+
+function renderDiscussButton() {
+  const count = [...ctx.data.comments.values()].filter((c) => c.note_id === currentId).length;
+  const button = $('#note-discuss');
+  button.textContent = count ? `Discussion (${count})` : 'Discussion';
+  button.setAttribute('aria-expanded', String(threadOpen));
+}
+
+function showThread() {
+  const box = $('#note-thread');
+  box.hidden = !(threadOpen && currentId && ctx.state.threadsReady);
+  $('#note-discuss').hidden = !ctx.state.threadsReady;
+  if (!box.hidden && !thread) {
+    thread = createThread(ctx, { note_id: currentId });
+    box.replaceChildren(el('h2', { text: 'Discussion' }), thread.el);
+  }
+  renderDiscussButton();
+}
+
+// Links or comments changed somewhere else.
+export function refreshLinked() {
+  if (!currentId) return;
+  renderBacklinks();
+  thread?.refresh();
+  showThread();
 }
 
 function applyMode() {
@@ -342,7 +370,10 @@ async function open(id) {
   $('#note-pane').hidden = false;
   $('#tool-vault').classList.add('note-open');
   applyMode();
+  thread = null;
+  $('#note-thread').replaceChildren();
   loadIntoEditor(note);
+  showThread();
   history.replaceState(null, '', `${location.pathname}${location.search}${noteHash(note.path)}`);
 }
 
@@ -351,13 +382,26 @@ export function openPath(path) {
   if (note) open(note.id);
 }
 
+export function openId(id) {
+  $('#tool-vault').classList.add('note-open');
+  open(id);
+}
+
+export const get = (id) => notes.get(id);
+export const list = () => [...notes.values()];
+
 function closeNote() {
   currentId = null;
   dirty = false;
+  thread = null;
+  $('#note-thread').replaceChildren();
+  $('#note-thread').hidden = true;
   $('#note-pane').hidden = true;
   $('#vault-empty').hidden = false;
   $('#tool-vault').classList.remove('note-open');
-  history.replaceState(null, '', `${location.pathname}${location.search}#vault`);
+  if (location.hash.startsWith('#vault')) {
+    history.replaceState(null, '', `${location.pathname}${location.search}#vault`);
+  }
   renderTree();
 }
 
@@ -602,12 +646,13 @@ async function renameNote() {
 async function deleteNote() {
   const note = notes.get(currentId);
   if (!note) return;
-  const yes = await confirmModal('Delete note', `Delete "${note.path}"? Its last copy stays in the database history.`);
+  const yes = await confirmModal('Delete note', `Delete "${note.path}"? Its discussion and task links go with it. The note's last copy stays in the database history.`);
   if (!yes) return;
   try {
     await ctx.api.removeNote(note.id);
     notes.delete(note.id);
     closeNote();
+    ctx.changed();
   } catch (err) {
     toast(friendly(err), 6000);
   }
@@ -761,8 +806,23 @@ async function importFiles(fileList) {
 
 export function init(context) {
   ctx = context;
-  loadMarkdown();
+  loadMarkdown().then(
+    () => {
+      if (currentId) updatePreview();
+    },
+    (err) => {
+      console.error(err);
+      toast("Couldn't load the Markdown preview. Editing still works.", 6000);
+    },
+  );
   applyMode();
+
+  $('#note-discuss').addEventListener('click', () => {
+    threadOpen = !threadOpen;
+    store.set('noteThread', threadOpen ? '1' : '0');
+    showThread();
+    if (threadOpen) thread?.focus();
+  });
 
   $('#note-new').addEventListener('click', () => newNote());
   $('#note-save').addEventListener('click', save);
@@ -815,24 +875,13 @@ export function init(context) {
     }
   });
 
-  preview.addEventListener('click', async (e) => {
-    const a = e.target.closest('a');
-    if (!a) return;
-    if (a.classList.contains('wikilink')) {
-      e.preventDefault();
-      const target = resolveLink(a.dataset.note);
-      if (target) open(target.id);
-      else newNote(a.dataset.note.split('#')[0].trim());
-      return;
-    }
-    const href = a.getAttribute('href') || '';
-    if (/^(https?:|mailto:|#)/i.test(href)) return;
-    // Regular Markdown links between notes, like [Spec](Specs/Combat.md)
-    e.preventDefault();
-    const target = resolveLink(decodeURI(href));
-    if (target) open(target.id);
-    else toast(`No note at ${href}`);
-  });
+  preview.addEventListener('click', (e) =>
+    handleLinkClick(e, {
+      resolveLink,
+      openNote: open,
+      missing: (name) => newNote(name),
+    }),
+  );
 
   window.addEventListener('beforeunload', (e) => {
     if (dirty) {

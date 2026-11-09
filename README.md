@@ -12,7 +12,7 @@ Live at **https://briveon.net** (hosted on Netlify). Plain HTML/CSS/JS with no b
 | `assets/` | Images and music |
 | `admin/` | Briveon HQ: sign-in, tabs and shared state (`admin.js`), tools in `admin/tools/`, helpers in `admin/lib/` |
 | `admin/config.js` | Supabase connection + team names |
-| `supabase/schema.sql`, `supabase/002_vault_colors.sql` | Database setup for HQ (run each once, in that order) |
+| `supabase/schema.sql`, `002_vault_colors.sql`, `003_threads_activity.sql` | Database setup for HQ (run each once, in that order) |
 | `tools/pull-vault.ps1` | Downloads a read-only copy of the vault for your AI |
 | `tools/serve.ps1` | Local preview server (no Node/Python needed) |
 | `netlify.toml` | Netlify deploy settings (copies the public site into `dist/`) |
@@ -45,7 +45,7 @@ Push to `main`. Netlify picks up the push and redeploys briveon.net within a min
 6. Copy the **Project URL** (Project Settings → Data API) and the **publishable key** (Project Settings → API Keys; older projects call it the "anon public" key) into `admin/config.js`. Never use the secret / `service_role` key.
 7. Push, open https://briveon.net/admin/, sign in.
 
-8. For the vault and color coding: **SQL Editor → New query**, paste all of `supabase/002_vault_colors.sql`, **Run**. Do this before pushing the HQ code that uses it.
+8. Run the remaining database files the same way, in order: `supabase/002_vault_colors.sql` (vault and colors), then `supabase/003_threads_activity.sql` (linked notes, discussions, activity). Run each one before pushing the HQ code that uses it.
 
 How the data stays private: the publishable key is designed to be public, but the database rules in `schema.sql` only let signed-in users whose email is in `admins` read or change tasks. Changes show up live for both of you.
 
